@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>MDS</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 20px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0 25%; /* 幅を25%に設定して4列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+</head>
+<body>
+
+<h1><center>MDS: Multi Dimensional Scaling<br><span style="color:blue;">多次元尺度構成法</span></center></h1>
+
+<h2>なにものか?</h2>
+<p>
+複数の点の、お互いの距離情報から二次元や三次元の配置(マップ)を復元するもの。
+<center><img src="images/mds.svg"></center>
+</p>
+
+<h3 style="padding-left:1em;">入力</h3>
+<p>
+<strong>近接行列</strong> (proximity matrix)：お互いの距離情報<br>
+・正方行列　　：総当たりの組み合わせの距離なので。<br>
+・対象行列　　：A から B までの距離と B から A までの距離は同じ。<br>
+・対角成分は０：自分から自分までの距離なので。<br>
+<br>
+(点の数)×(点の数)の行列を扱うので、点の数が多いと使いづらくなる。<br>
+別名 EDM: Euclidean Distance Matrix (ユークリッド距離行列)
+</p>
+
+<h3 style="padding-left:1em">出力</h3>
+<p>
+二次元または三次元の配置(マップ)<br>
+<br>
+・回転しても、裏返しても距離は変わらないので、結果には回転、裏返しのあいまいさがあり、経度、緯度のような絶対的な出力にはならない。
+</p>
+
+<h2>用途</h2>
+<p>
+これが何の役に立つのか？<br>
+
+<div class="styleBullet">
+<ul><li>
+(1) <strong>多次元データの可視化</strong> (データ・サイエンス)<br>
+・距離は多次元の点でもで定義されるので、二次元や三次元のマップに次元を下げて、可視化することができる。<br>
+・高次元データを扱う識別器のクラス間の分離具合などを視覚化し確認する。<br>
+・この用途では、t-SNE, UMAP, などが使われることが多いかも。
+</li><br><li>
+(2) <strong>抽象的な距離をマップ化して視覚化する</strong> (心理学, マーケティング, 不動産, 政策, ･･･)<br>
+・人と人の心理的距離を数値化し、マップで表示する。<br>
+・各種製品に対する顧客の感想(爽快さ、値ごろ感、など)を数値化してもらい、それらを高次元ベクトルとして、製品の位置づけをマップ化する<br>
+・各都市の犯罪発生率、･･･ を数値化し、それらを高次元べクトルとして、各都市をマップ化する
+
+</li><br><li>
+(3) <strong>無線端末の配置を視覚化する</strong> (ロボット, 消防, ･･･)<br>
+・お互いの電波強度から距離は推定できる。<br>
+・電波が届かない端末間の扱いをどうするか工夫する必要がある。<br>
+　●<a href="https://export.arxiv.org/pdf/2110.07365v2">『DynoLoc: 動的な屋内環境でのインフラストラクチャフリーの RF トラッキング』</a> (2022)<br>
+<div class="styleBullet">
+<ul><li>
+　　相対的な位置特定のための既存のソリューション(ユークリッド距離行列(EDM) を使用する手法など) は、ネットワークトポロジが完全グラフであり、すべての距離推定が利用可能で正確な場合にはうまく機能します。ただし、実際の展開でこのように機能しない場合、精度が著しく低下する可能性があります。<br>
+</li><li>
+　　グラフのエッジの重みは、隣接行列(別名ユークリッド距離行列 EDM)の形式で維持され、各エントリは2つのノード間の測定された距離を表します。次に、多次元スケーリング(MDS)と呼ばれるアプローチがEDMマトリックスに適用され、EVD (固有値分解) によって 2D直交座標空間にノードが埋め込まれます(つまり、相対的な位置特定)。<br>
+</li><li>
+　　不完全なトポロジ全体に EDM 補完技術を適用する代わりに、kコアサブグラフのグラフ剛性構造を利用。<br>
+</li></ul></div>
+<br>
+<center><img src="images/k-core-decomposition.png"></center>
+　
+</li></ul></div>
+</p>
+
+<h2>実装</h2>
+
+<h3 style="padding-left:1em;">scikit-learn に MDS を実行してもらう</h3>
+
+<p>
+近接行列(の各要素を2乗したもの)を与えれば, 位置関係に変換してくれる。<br>
+(data/mds/src/mds_by_scikit-learn.py)
+</p>
+
+<pre>
+<code style="padding-left:3em;">
+import numpy as np
+import matplotlib.pylab as plt
+from sklearn import manifold
+
+# 近接行列(の各要素を2乗したもの)
+
+P = np.array([
+    [0.00, 1.00, 1.73, 2.00, 1.73, 1.00],
+    [1.00, 0.00, 1.00, 1.73, 2.00, 1.73],
+    [1.73, 1.00, 0.00, 1.00, 1.73, 2.00],
+    [2.00, 1.73, 1.00, 0.00, 1.00, 1.73],
+    [1.73, 2.00, 1.73, 1.00, 0.00, 1.00],
+    [1.00, 1.73, 2.00, 1.73, 1.00, 0.00]])
+
+P2 = P ** 2 # 各要素を2乗
+
+N = P2.shape[0]
+
+# MDSオブジェクトの作成
+mds = manifold.MDS(n_components = 2,  dissimilarity = 'precomputed')
+
+# MDSの実行
+loc = mds.fit_transform(P2)
+
+# MDS実行結果の表示
+for i in range(N):
+    plt.plot([loc[i-1][0], loc[i][0]], [loc[i-1][1], loc[i][1]])
+
+plt.show()
+</code>
+</pre>
+
+<p>
+(実行結果)<br>
+<center><img src="images/result1.png"></center>
+</p>
+
+<h3 style="padding-left:1em;">Numpy を使って MDS を実装する</h3>
+
+<p>
+<a href="https://en.wikipedia.org/wiki/Multidimensional_scaling">wikipeia MDS</a> に古典MDS のステップが載っているので, Numpy を使ってその通りに実装してみる。<br>
+
+<div class="styleBullet">
+<ul><li>
+<strong>STEP.1</strong><br>
+各要素を2乗した近接行列を用意する。<br>
+\(P^{(2)}=[p_{ij}^2]\)
+<li><br><li>
+<strong>STEP.2</strong><br>
+センタリング行列 \(C=I-\frac{1}{2}J_n\) を使ってダブルセンタリング \(B=-\frac{1}{2}CP^{(2)}C\) を実行する。<br>
+ここで \(n\) は点の数, \(I\) は \(n×n\) の単位行列, \(J_n\) は \(n×n\) は要素がすべて1の行列。
+<li><br><li>
+<strong>STEP.3</strong><br>
+\(B\) の固有値 \(\lambda_1, \lambda_2, \lambda_3, \cdots\) から大きいものを \(m\) 個と, それに対応する固有ベクトル \(m\) 個を求める。
+<li><br><li>
+<strong>STEP.4</strong><br>
+\(X=E_m\Lambda_m^{1/2}\) を求める。<br>
+ここで \(E_m\) は \(m\) 個の固有ベクトルからなる行列, \(\Lambda_m\) は \(B\) の \(m\) 個の固有値の対角行列。<br>
+※ これは縦横比の調整。以下のコードでは実装していない。
+</li></ul></div>
+</p>
+
+<p>
+(data/mds/src/mds_by_numpy.py)
+</p>
+
+<pre>
+<code style="padding-left:3em;">
+
+import numpy as np
+import matplotlib.pylab as plt
+
+# STEP1: 近接行列の各要素を2乗したものを用意する
+
+P = np.array([[0.00, 1.00, 1.73, 2.00, 1.73, 1.00],
+    [1.00, 0.00, 1.00, 1.73, 2.00, 1.73],
+    [1.73, 1.00, 0.00, 1.00, 1.73, 2.00],
+    [2.00, 1.73, 1.00, 0.00, 1.00, 1.73],
+    [1.73, 2.00, 1.73, 1.00, 0.00, 1.00],
+    [1.00, 1.73, 2.00, 1.73, 1.00, 0.00]])
+
+P2 = P ** 2 # 各要素を2乗
+
+N = P2.shape[0]
+
+# STEP2: センタリング行列を使ってダブルセンタリングを実施する。
+
+C = np.eye(N) - np.ones((N,N))/2 # センタリング行列
+
+B = - 1/2 * C * P2 * C # ヤング・ハウスホルダー変換 (ダブルセンタリング)
+
+# STEP3: 固有値分解
+
+w,v = np.linalg.eig(B)
+indices = np.argsort(w)
+x = indices[-1] # 1番大きい固有値の index をx軸とする
+y = indices[-2] # 2番目に大きい固有値のindx を y軸とする
+
+# MDS実行結果の表示
+for i in range(N):
+    plt.plot([v[i-1][x], v[i][x]], [v[i-1][y], v[i][y]])
+
+plt.show()
+
+</code>
+</pre>
+
+<p>
+(実行結果)
+</p>
+
+<center><img src="images/result2.png"></center>
+
+<h3 style="padding-left:1em;">ヤング・ハウスホルダー変換 (Young-Householder Transformation)</h3>
+<p>
+Google AIモードによれば･･･<br>
+<br>
+多変量解析の手法の一つである多次元尺度構成法（MDS）において、「個体間の距離データ」を「内積行列」へと変換する数学的な手続きのこと。<br>
+1938年にG. YoungとA. S. Householderによって提案された定理に基づいている。
+</p>
+<h2>リンク</h2>
+<p>
+・<a href="https://en.wikipedia.org/wiki/Multidimensional_scaling">wikipeia: Multidimensional_scaling</a><br>
+・<a href="https://en.wikipedia.org/wiki/Householder_transformation">Wikipedia: Householder transformation</a><br>
+・<a href="https://ja.wikipedia.org/wiki/ハウスホルダー変換">ウィキペディア：ハウスホルダー変換</a>
+</p>
+</p>
+</body>
+</html>
