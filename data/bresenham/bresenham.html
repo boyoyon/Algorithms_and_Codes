@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>Bresnhams's Algorithm</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 20px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0 25%; /* 幅を25%に設定して4列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+</head>
+<body>
+
+<h1><center>Bresenham's Algorithm</center></h1>
+
+<h2>なにものか?</h2>
+<p>
+プロッター用の直線描画アルゴリズム<br>
+<a href="https://boyoyon.github.io/HTMLs_translated_to_Japanese/1965_Bresenham/Algorithm%20for%20computer%20contril%20of%20a%20digital%20plotter.html">デジタルプロッタのコンピュータ制御アルゴリズム</a> (1965)
+</p>
+
+<h3 style="padding-left:1em;">入力</h3>
+<p>
+始点と終点の座標
+</p>
+
+<h3 style="padding-left:1em">出力</h3>
+<p>
+始点と終点を結ぶ直線上の点の座標
+</p>
+
+<h2>用途</h2>
+<p>
+これが何の役に立つのか？<br>
+・直線描画<br>
+・データの直線補間<br>
+・データの拡大、縮小(画像ならスケーリング、音声ならピッチ変更)<br>
+<br>
+目的に沿ってアルゴリズムをチューニングする際のお手本になるんじゃないだろうか？
+
+</p>
+
+<h2>実装</h2>
+
+<p>
+デジタル画像の場合、始点座標 \((x_{start},y_{start})\) も、終点座標 \((x_{end},y_{end})\) も整数だが、
+\[
+y=ax+b
+\]
+で直線上の点を求めると、実数の掛け算を行う必要がある。
+</p>
+
+<p>
+通常、CPU の処理時間は<br>
+・加算　　 <<　乗算<br>
+・整数演算 <<　実数演算<br>
+なので、<br>
+① 乗算を使いたくない<br>
+② 実数演算を使いたくない<br>
+</p>
+
+<p>
+①②を目的として、アルゴリズムをチューニングする
+</p>
+
+<p style="padding-left:1em;">
+<strong>STEP.1　乗算をなくす</strong>
+</p>
+
+<p>
+・\(y=ax+b\) は、任意の \(x\) に対して \(y\) を求められるが、乗算を使う。<br>
+・\(x_{start}\) から \(x_{end}\) まで順番に座標を計算するなら加算で実現できる(増分法)<br>
+\[
+\begin{array}{c|c|c|c}
+x_{start} & +1 & +1 & \cdots & x_{end} \\
+\hline
+y_{start} & +a & +a & \cdots & y_{end}
+\end{array}
+\]
+　※ \(x_{start} \lt x_{end}\) の場合。<br>
+　　 \(x_{start} \gt x_{end}\) の場合は、+1 を -1 に変更することで対応可能。<br>
+　　 \(x_{strat} = x_{end}\) の場合は、別処理で対応する。
+</p>
+
+<p>
+・傾きが \(0 \leq a \leq 1\) の場合を考える。<br>
+　それ以外の場合は、座標の入れ替え、正負の反転などで対応できる。
+</p>
+
+<p>
+・\(x\) を \(+1\) したとき、\(y\) は \(+0\) か \(+1\) かである。<br>
+　\(+a\) した結果が \(0.5\) より大きいか小さいかで決まる。<br>
+　判定の閾値を \(-0.5\) しておくと正負で判定できる。
+</p>
+
+<p>
+[実数版アルゴリズム]<br>
+　(初期化)<br>
+　・\(x\) ← \(x_{start}\)<br>
+　・\(y\) ← \(y_{start}\)<br>
+　・\(a\) ← (\(y_{end}\) - \(y_{start}\)) / (\(x_{end}\) - \(x_{start}\))<br>
+　・\(th\) ← \(0.5\)<br>
+<br>
+　(ループ処理)<br>
+　・while \((x \leq x_{end})\)<br>
+　　　\(x\) += \(1\)<br>
+　　　\(th\) += \(a\)<br>
+　　　if (\(th \gt 0\))<br>
+　　　　　\(y\) += \(1\)<br>
+　　　　　\(th\) ｰ= \(1\)
+</p>
+
+<p style="padding-left:1em;">
+<strong>STEP.2　実数演算をなくす</strong>
+</p>
+
+<p>
+実数演算が必要になるのは、<br>
+・傾き \(a\) が実数だから。<br>
+\[
+a=\frac{Δy}{Δx}=\frac{y_{end} - y_{start}}{x_{end} - x_{start}}
+\]
+
+・閾値 \(th\) が \(0.5\) だから<br>
+→ 実数版アルゴリズムの \(a\) と \(th\) を \(2Δx\) 倍すると整数化できる。
+</p>
+
+<p>
+[整数版アルゴリズム]<br>
+　(初期化)<br>
+　・\(x\) ← \(x_{start}\)<br>
+　・\(y\) ← \(y_{start}\)<br>
+　・\(a\) ← \((y_{end}\) - \(y_{start})*2\)<br>
+　・\(th\) ← \(x_{end}-x_{start}\)<br>
+<br>
+　(ループ処理)<br>
+　・while \((x \leq x_{end})\)<br>
+　　　\(x\) += \(1\)<br>
+　　　\(th\) += \(a\)<br>
+　　　if (\(th \gt 0\))<br>
+　　　　　\(y\) += \(1\)<br>
+　　　　　\(th\) ｰ= \((x_{end}-x_{start})*2\)
+</p>
+</body>
+</html>
