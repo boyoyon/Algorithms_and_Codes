@@ -186,5 +186,108 @@ a=\frac{Δy}{Δx}=\frac{y_{end} - y_{start}}{x_{end} - x_{start}}
 　　　　　\(y\) += \(1\)<br>
 　　　　　\(th\) ｰ= \((x_{end}-x_{start})*2\)
 </p>
+
+<p>
+(data/bresnham/src/test_bresenham.py)<br>
+ 80 年代の PC 上で BASIC で実行するよりずっと遅い･･･ 
+</p>
+
+<pre>
+<code style="padding-left:3em;">
+
+import numpy as np
+import cv2
+
+def bresenham(screen, xs, ys, xe, ye, col):
+
+    dx = xe - xs
+    dy = ye - ys
+
+    b = col[0]
+    g = col[1]
+    r = col[2]
+
+    if dx == 0 and dy == 0:
+        return
+
+    elif  dx == 0:
+
+        if ye > ys:
+
+            for y in range(ys, ye+1):
+
+                screen[y][xs][0] = b
+                screen[y][xs][1] = g
+                screen[y][xs][2] = r
+            
+        else:
+
+            for y in range(ye, ys+1):
+
+                screen[y][xs][0] = b
+                screen[y][xs][1] = g
+                screen[y][xs][2] = r
+
+    elif dy == 0:
+
+        if xe > xs:
+
+            for x in range(xs, xe+1):
+ 
+                screen[ys][x][0] = b
+                screen[ys][x][1] = g
+                screen[ys][x][2] = r
+
+        else:
+
+            for x in range(xe, xs+1):
+ 
+                screen[ys][x][0] = b
+                screen[ys][x][1] = g
+                screen[ys][x][2] = r
+
+    else:
+
+        x = xs
+        y = ys
+
+        x_step = 1
+        if xs > xe:
+            x_step = -1
+
+        y_step = 1
+        if ys > ye:
+            y_step = -1
+
+        a = np.abs(ye - ys) * 2
+        th = np.abs(xs - xe) * -1
+        th_step = np.abs(xe - xs) * -2
+
+
+        screen[y][x][0] = b
+        screen[y][x][1] = g
+        screen[y][x][2] = r
+
+        while x != xe:
+
+            x += x_step
+            th += a
+
+            while th > 0:
+
+                y += y_step
+                th += th_step
+
+                screen[y][x][0] = b
+                screen[y][x][1] = g
+                screen[y][x][2] = r
+
+            screen[y][x][0] = b  
+            screen[y][x][1] = g
+            screen[y][x][2] = r
+
+</code>
+</pre>
+
 </body>
 </html>
