@@ -118,7 +118,7 @@ def main():
 
     while key != ESC:
 
-        key = cv2.waitKey(100)
+        key = cv2.waitKey(10)
 
         if key == ESC:
             break
