@@ -135,8 +135,10 @@ y_{start} & +a & +a & \cdots & y_{end}
 <p>
 ・\(x\) を \(+1\) したとき、\(y\) は \(+0\) か \(+1\) かである。<br>
 　\(+a\) した結果が \(0.5\) より大きいか小さいかで決まる。<br>
-　判定の閾値を \(-0.5\) しておくと正負で判定できる。
+　判定用の変数を \(-0.5\) に初期化しておくと正負で判定できる。
 </p>
+
+<center><img src="images/1.svg"></center>
 
 <p>
 [実数版アルゴリズム]<br>
@@ -170,6 +172,8 @@ a=\frac{Δy}{Δx}=\frac{y_{end} - y_{start}}{x_{end} - x_{start}}
 → 実数版アルゴリズムの \(a\) と \(th\) を \(2Δx\) 倍すると整数化できる。
 </p>
 
+<center><img src="images/2.svg"></center>
+
 <p>
 [整数版アルゴリズム]<br>
 　(初期化)<br>
@@ -189,7 +193,7 @@ a=\frac{Δy}{Δx}=\frac{y_{end} - y_{start}}{x_{end} - x_{start}}
 
 <p>
 (data/bresnham/src/test_bresenham.py)<br>
- 遅いのは、キー入力待ちだった。100ms → 10ms に減らした。
+
 </p>
 
 <pre>
@@ -273,7 +277,7 @@ def bresenham(screen, xs, ys, xe, ye, col):
             x += x_step
             th += a
 
-            while th > 0:
+            while th > 0: # 傾き 1 以上に対応するため if → while 
 
                 y += y_step
                 th += th_step
