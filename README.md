@@ -5,16 +5,39 @@
 <body>
 <h1><center>アルゴリズムとコード</center></h1>
 <h2>なにものか？</h2>
+
 <p>
-アルゴリズムとお試しコードを集めてみようかと思う。
+　"<strong>私たちは「AI以前」を知る最後の世代であり、「AI以後」を形作る最初の世代でもある。</strong>"<br>
+　『ヒトとAI』　岡野原大輔
 </p>
+
+<p>
+AI(機械学習)の時代では、大量の訓練データを使って、名もない仮説(事前情報、特徴量) を大量に作り出して問題を解いてしまうが、<br>
+(しかも逆問題の学習データは機械的に合成しやすい)
+</p>
+
+<center><img src="images/1.svg"></center>
+
+<p>
+AI以前の時代には、研究者が手作りの仮説、アルゴリズムを提案して問題を解いていた。<br>
+・gauss フィルター, laplaceフィルタ、Sobelフィルタ、Prewitt フィルタ、･･･<br>
+・Harris, SIFT, SURF, FAST, BRISK, ORB、AKAZE･･･<br> 
+・haar-like 特徴、HOG、LBP、･･･<br>
+<br>
+そんな仮説、アルゴリズムとお試しコードを集めてみようかと思う。
+</p>
+
 <h2>0～9</h2>
 <h2>A</h2>
 <h2>B</h2>
-・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/bresenham/bresenham.html">Bresenham’s Algorithm
-</a><br>
+
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/bresenham/bresenham.html">Bresenham’s Algorithm</a></br>
+
 <h2>C</h2>
 <h2>D</h2>
+
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/dark_channel_prior/dark_channel_prior.html">Dark Channel Prior</a><br>
+
 <h2>E</h2>
 <h2>F</h2>
 <h2>G</h2>
