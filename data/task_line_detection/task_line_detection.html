@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>直線検出</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(タスク) 直線検出</center></h1>
+<h3>何ものか？</h3>
+<p>
+画像内から直線（または線分）の形状を持つ部分を見つけ出し、その位置や傾きを特定する画像処理の基本タスク。
+</p>
+
+<p>
+前処理 (グレイスケール変換、エッジ抽出) が必要な手法と、End-to-End で直線を検出する手法とがある。
+</p>
+
+<center>
+<img src="images/workflow.svg">
+</center>
+
+<p>
+アプローチを大別すると以下の 3 つに分類できる
+
+\[
+\begin{array}{l | l | l | l }
+\textbf{アプローチ} & \textbf{代表的な手法} & \textbf{メリット} & \textbf{デメリット}\\
+\hline
+\text{投票ベース} & \text{ハフ変換} & \text{断続的な線やノイズに強い} & \text{閾値調整が難しい。計算量が多い} \\
+\hline
+\text{勾配追跡ベース} & \text{LSD, EDLines} & \text{高速、調整不要。誤検出が少ない} & \text{テクスチャが複雑な場所で}\\
+&&&\text{線が細切れになる} \\
+\hline
+\text{深層学習ベース} & \text{L-CNN,HAWP,LETR} & \text{背景が複雑でも「意味のある直線」} & \text{GPUが必要。学習データに依存する}\\
+&&\text{を捉える}\\
+\end{array}
+\]
+
+</p>
+
+<center>
+<img src="images/line_detection.svg">
+</center>
+
+<p style="padding-left:4em;">
+[1]  『Method and Means for Recognizing Complex Patterns』 (1962)　傾き, y-切片で投票<br>
+　　『Use of the Hough Transformation to Detect Lines and Curves in Pictures』(1972)　ρ-θ空間で投票<br>
+　　『Generalizing the Hough Transform to Detect Arbitrary Shapes』(1981)　任意形状への拡張<br>
+[2] 『Probabilistic Hough Transform 』(1991)<br>
+[3] 『Progressive Probabilistic Hough Transform for Line Detection』(1998)<br>
+[4] 『Randomized Hough Transform』(1990)<br>
+[5] 『Detection of incomplete ellipse in images with strong noise by iterative randomized Hough transform (IRHT)』(2008)<br>
+[6] 『https://faculty.washington.edu/cfolson/papers/pdf/cviu99.pdf』(1999)<br>
+[7] 『LSD: A Fast Line Segment Detector with a False Detection Control』 (IEEE TPAMI 2010)<br>
+　　　IPOL Journal にも公開されている　『LSD: a Line Segment Detector』 (2012)<br>
+[8] 『EDLines: A real-time line segment detector with a false detection control』 (Pattern Recognition Letters 2011)<br>
+[9] 『Learning to Parse Wireframes in Images of Man-Made Environments』 (CVPR 2018)<br>
+[10] 『End-to-End Wireframe Parsing』  (ICCV 2019)<br>
+　　　(愛称) L-CNN: Line Convolutional Neural Network<br>
+[11] 『Holistically-Attracted Wireframe Parsing』 (CVPR 2020)<br>
+[12] 『Line Segment Detection Using Transformers without Edges』 (CVPR 2021)<br>
+　　　(愛称) LETR: LinE segment TRansformer
+　　
+</p>
+
+<h3>1. 投票ベース</h3>
+<h4 style="padding-left:1em;">1-1. 標準ハフ変換(SHT： Standard Hough Transform)</h3>
+
+<p>
+アルゴリズムの詳細は <a href="">Hough Transform</a> （今後作成予定） 参照
+</p>
+
+<p>
+一つ一つのエッジ点に対して、図形のパラメータ空間で投票を行い、得票数が閾値を超えたパラメータの図形を検出したと判定する。<br>
+・直線：直線と原点の距離 ρ、直線の法線とx軸のなす角 θ の 2 次元<br>
+・円： 中心点座標(cx,cy)、半径 r の 3 次元<br>
+・楕円： 中心座標(cx,cy)、長軸の長さ a、短軸の長さ b、傾き θ の 5 次元
+</p>
+
+<p>
+直線のパラメータとして、当初は傾きと y- 切片が提案されたが、その後、ρ-θ が使われるようになった。
+</p>
+
+<p style="padding-left:4em;">
+"Hough は、よく知られた「傾き」と「切片」をパラメータとして採用したため、彼のパラメータ空間は傾きと切片を軸とする2次元平面となりました。しかし残念なことに、傾きと切片はいずれも値の範囲に制限がない（非有界である）ため、この手法を適用する上で問題が生じます。”
+</p>
+
+<p style="text-align:right;">
+『Use of the Hough Transformation to Detect Lines and Curves in Pictures』(1972)　
+</p>
+
+<p>
+<strong>直線の ρ-θ 表現</strong><br>
+・直線の法線と、\(x\) 軸のなす角を \(θ\) とすると、単位長さの法線は \((\cos\theta,\sin\theta)\)<br>
+・直線上の点 \((x,y)\) と単位長さの法線の内積は
+\[
+x\cos\theta+y\sin\theta=\rho
+\]
+
+　となる。直線上にない点の場合
+
+\[
+x\cos\theta+y\sin\theta \gt \rho \quad \text{ピンクの領域}
+\]
+
+\[
+x\cos\theta+y\sin\theta \lt \rho \quad \text{水色の領域}
+\]
+
+　となる。
+</p>
+
+<center><img src="images/rho_theta.svg"></center>
+
+<p>
+ρ-θ表現を使うと<br>
+・θ：0～π<br>
+・ρ：0～画像サイズ程度<br>
+と有界になる。
+</p>
+
+<p>
+<strong>投票のイメージ</strong><br>　
+</p>
+
+<center><img src="images/vote.svg"></center>
+
+<h4 style="padding-left:1em;">1-2. (漸進的) 確率的ハフ変換 (PPHT： Progressive Probabilistic Hough Transform)</h4>
+
+<p>
+すべての点ではなく、ランダムにサンプリングしたエッジ点のみを使って投票を行うことで計算量を大幅に削減する。
+</p>
+
+<p>
+直線が確定すると、その直線上にあるエッジ画素を実際に探索して始点、終点を検出する。
+</p>
+
+<h4 style="padding-left:1em;">1-3.ランダムハフ変換(RHT： Randomized Hough Transform)</h4>
+
+<p>
+ 任意に選んだエッジ点 2 点から直線のパラメータを直接計算して投票することで、さらに効率化を図ったもの。
+</p>
+
+<h3>2. 勾配追跡ベース</h3>
+
+<p>
+アルゴリズムの詳細は別途作成予定...
+</p>
+
+<p>
+　ハフ変換のように画像全体のエッジ点で投票するのではなく、画素の「輝度勾配（向きと強さ）」を局所的に解析して直線を繋ぎ合わせていく。<br>
+・パラメータ調整がほぼ不要で、誤検出が少ない。
+</p>
+
+<h4 style="padding-left:1em;">2-1. LSD： Line Segment Detector</h4>
+
+<p>
+画素の勾配方向が揃っている領域（Line Support Region）をグループ化し、長方形として近似する。
+</p>
+
+<p>
+ 「ヘルムホルツの原理」という統計的な仮定（偽陽性制御）を導入し、境界条件（閾値）を人間が調整しなくても、誤検出（ノイズ）を極限まで抑えて正確な線分を検出できる。
+</p>
+
+<p>
+曲線の一部も線分として検出できるため、円検出でも利用されることがある。<br>
+(線分が円周の一部ならば、垂直二等分線が円の中心で交わるはず･･･)
+</p>
+
+<h4 style="padding-left:1em;">2-2. EDLines：　Edge Drawing Lines</h4>
+
+<p>
+「Edge Drawing」という手法でクリーンなエッジのアンカー（固定点）を抽出し、それらを直線セグメントとして繋ぎ合わせる。
+</p>
+
+<p>
+LSDと同等以上の精度を持ちながら、LSDよりも数倍高速に動作する。
+</p>
+
+<h3>3. 深層学習ベース</h3>
+
+<p>
+ノイズや障害物（オクルージョン）、複雑な背景に影響されない深層学習ベースの直線・線分検出（Wireframe Parser）が主流になっている。
+</p>
+
+<h4 style="padding-left:1em;">3-1. Wireframe Parser</h4>
+
+<p>
+畳み込みニューラルネットワーク（CNN）を使い、画像から「直線の端点（Junction）」と「それらを結ぶ線分」を同時に予測し、建物などのワイヤーフレーム構造を丸ごと検出する手法の先駆けとなった。
+</p>
+
+<h4 style="padding-left:1em;">3-2. L-CNN: Line Convolutional Neural Network</h4>
+
+<p>
+Wireframe Parserを発展させ、エンドツーエンドで高速・高精度に線分構造を検出するネットワーク。LoI (Line of Interest) プーリングという技術を使い、直線の候補を効率よく精緻化する。
+</p>
+
+<h4 style="padding-left:1em;">3-3. HAWP： Holistic Attraction Field Map</h4>
+
+<p>
+画素から最も近い線分への「引力（アトラクションフィールド）」を定義し、画像全体のジオメトリを捉えることで、幾何学的に破綻のない美しい線分群を検出する。
+</p>
+
+
+<h4 style="padding-left:1em;">3-4. LETR: LinE segment TRansformer </h4>
+
+<p>
+物体検出で成果を上げた「DETR」の仕組みを線分検出に応用（Line Segment Detection with Transformers）したもの。
+</p>
+
+<p>
+画像内の長距離の依存関係を捉えられるため、途切れがちな長い直線も1本として綺麗に検出できる。
+</p>
+
+<h3>お試しコード</h3>
+
+<p>
+PHT、LSD、EDLines は OpenCV を使って簡単に試すことができる。
+</p>
+
+<center><img src="images/test_image.png"></center>
+<center>テスト画像</center>
+
+<h4 style="padding-left:1em;">PHT お試しコード</h4>
+
+<p>
+(data/task_line_detect/src/line_detect_by_PHT.py)
+<pre>
+<code style="padding-left:3em;">
+# 画像読み込み → グレースケール化
+img = cv2.imread(argv[1])
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# エッジ検出
+edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+
+# 確率的ハフ変換（PHT）による直線検出
+# パラメータ: (画像, 距離解像度, 角度解像度, 閾値, 最小線長, 最大線隙間)
+lines = cv2.HoughLinesP(edges, rho=1, theta=np.pi/180, threshold=100, minLineLength=100, maxLineGap=10)
+
+# 検出した直線を元の画像に描画
+if lines is not None:
+    for line in lines:
+        x1, y1, x2, y2 = line[0]
+        # 赤色（BGR: 0, 0, 255）で線を描画
+        cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 1, cv2.LINE_AA)
+</code>
+</pre>
+
+<center><img src="images/result_PHT.png"></center>
+<center>PHT 結果</center>
+
+<p>
+パラメータをちょっといじってみたが、センターラインがうまく検出されず･･･
+</p>
+
+<h4 style="padding-left:1em;">LSD お試しコード</h4>
+
+<p>
+(data/task_line_detect/src/line_detect_by_LSD.py)
+<pre>
+<code style="padding-left:3em;">
+
+# 画像読み込み → グレースケール化
+img = cv2.imread (argv[1])
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# LSDオブジェクト作成～線分検出
+lsd = cv2.createLineSegmentDetector(0)
+lines = lsd.detect(gray)[0]
+
+# 検出した線分を元の画像に描画
+for l in lines:
+    x0 = int(l[0][0])
+    y0 = int(l[0][1])
+    x1 = int(l[0][2])
+    y1 = int(l[0][3])
+    
+    # 赤色（BGR: 0, 0, 255）で線を描画
+    cv2.line(img, (x0, y0), (x1, y1), ( 0, 0, 255), 1, cv2.LINE_AA)
+
+</code>
+</pre>
+
+<center><img src="images/result_LSD.png"></center>
+<center>LSD 結果</center>
+
+<h4 style="padding-left:1em;">EDLines お試しコード</h4>
+
+<p>
+(data/task_line_detect/src/line_detect_by_EDLines.py)<br>
+<br>
+cv2 contrib モジュールのため<br>
+pip install opencv-contrib-python<br>
+する必要あり
+</ｐ>
+
+<pre>
+<code style="padding-left:3em;">
+
+# 画像読み込み → グレースケール化
+img = cv2.imread(argv[1])
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# Edge Drawing (ED) オブジェクトの作成
+ed = cv2.ximgproc.createEdgeDrawing()
+
+# パラメータのカスタマイズ
+# 構造体を新しく作らず、ed.params の値を直接書き換えます
+ed.Params.EdgeDetectionOperator = cv2.ximgproc.EdgeDrawing_PREWITT  # 勾配算子 (デフォルトは PREWITT)
+ed.Params.GradientThresholdValue = 20    # アンカーポイント選定の閾値
+ed.Params.EdgeArgument = 11                 # 勾配の閾値
+ed.Params.MinPathLength = 10                # 最低限必要なエッジの長さ
+
+# エッジと直線の検出
+ed.detectEdges(gray)
+lines = ed.detectLines()
+
+# 検出された直線を元の画像に描画
+# detectLines() の戻り値は [[[x1, y1, x2, y2]], [[x1, y1, x2, y2]], ...] という形状の配列
+output_img = img.copy()
+
+if lines is not None:
+    for line in lines:
+        # 座標データを取得
+        x1, y1, x2, y2 = line[0].astype(int)
+        
+        # 赤色（BGR: 0, 0, 255）で線を描画
+        cv2.line(output_img, (x1, y1), (x2, y2), (0, 0, 255), 1, cv2.LINE_AA)
+</code>
+</pre>
+
+<center><img src="images/result_EDLines.png"></center>
+<center>EDLines 結果</center>
+
+<h4 style="padding-left:1em;">L-CNN Github
+</h4>
+
+<p>
+<a href="https://github.com/zhou13/lcnn">End-to-End Wireframe Parsing</a><br>
+(動作未確認)
+</p>
+
+<h4 style="padding-left:1em;">HAWP Github</h4>
+
+<p>
+<a href="https://github.com/cherubicXN/hawp">Holistically-Attracted Wireframe Parsing: From Supervised Learning to Self-Supervised Learning</a><br>
+(動作未確認)
+</p>
+
+<h4 style="padding-left:1em;">LETR github</h4>
+
+<p>
+<a href="https://github.com/mlpc-ucsd/LETR">LETR: Line Segment Detection Using Transformers without Edges</a><br>
+(動作未確認)
+</p>
+
+    </body>
+</html>
