@@ -46,6 +46,7 @@ AI以前の時代には、研究者が手作りの仮説、アルゴリズムを
 <h2>J</h2>
 <h2>K</h2>
 <h2>L</h2>
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_line_detection/task_line_detection.html">(タスク) Line Detectin</a></br>
 <h2>M</h2>
 
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/mds/mds.html">MDS: Multi Dimensional Scaling (多次元尺度構成法)</a><br>
