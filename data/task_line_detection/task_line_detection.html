@@ -389,8 +389,32 @@ if lines is not None:
 
 <p>
 <a href="https://github.com/zhou13/lcnn">End-to-End Wireframe Parsing</a><br>
-(動作未確認)
+<br>
+github から コードをダウンロード～解凍する<br>
+Code --> Downlaod ZIP <br>
+lcnn-master.zip を解凍する<br>
+<br>
+モデルの重みを以下からダウンロードする<br>
+https://huggingface.co/yichaozhou/lcnn/tree/main/Pretrained<br>
+<br>
+実行環境をセットアップする<br>
+conda create -y -n lcnn python=3.10<br>
+conda activate lcnn<br>
+<br>
+pip install torch torchvision<br>
+pip install scikit-image<br>
+pip install matplotlib<br>
+pip install pyyaml<br>
+pip install docopt<br>
+pip install tensorboardX tensorboard<br>
+pip install opencv-python<br>
+<br>
+デモスクリプトを実行する<br>
+python demo.py -d 0 config/wireframe.yaml (重みファイルへのパス) (入力画像へのパス)
+
 </p>
+
+<center><img src="images/result_lcnn.png"></center>
 
 <h4 style="padding-left:1em;">HAWP Github</h4>
 
