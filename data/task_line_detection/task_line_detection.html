@@ -114,12 +114,13 @@
 　　
 </p>
 
+<p>
+深層学習ベースの手法の論文、コードは以下にまとめられている。<br>
+<a href="https://github.com/lh9171338/Line-Segment-Detection-Papers/blob/master/README.md">Line Segment Detection Papers</a>
+</p>
+
 <h3>1. 投票ベース</h3>
 <h4 style="padding-left:1em;">1-1. 標準ハフ変換(SHT： Standard Hough Transform)</h3>
-
-<p>
-アルゴリズムの詳細は <a href="">Hough Transform</a> （今後作成予定） 参照
-</p>
 
 <p>
 一つ一つのエッジ点に対して、図形のパラメータ空間で投票を行い、得票数が閾値を超えたパラメータの図形を検出したと判定する。<br>
@@ -195,10 +196,6 @@ x\cos\theta+y\sin\theta \lt \rho \quad \text{青, 水色の領域}
 <h3>2. 勾配追跡ベース</h3>
 
 <p>
-アルゴリズムの詳細は別途作成予定...
-</p>
-
-<p>
 　ハフ変換のように画像全体のエッジ点で投票するのではなく、画素の「輝度勾配（向きと強さ）」を局所的に解析して直線を繋ぎ合わせていく。<br>
 ・パラメータ調整がほぼ不要で、誤検出が少ない。
 </p>
@@ -218,7 +215,7 @@ x\cos\theta+y\sin\theta \lt \rho \quad \text{青, 水色の領域}
 (線分が円周の一部ならば、垂直二等分線が円の中心で交わるはず･･･)
 </p>
 
-<h4 style="padding-left:1em;">2-2. EDLines：　Edge Drawing Lines</h4>
+<h4 style="padding-left:1em;">2-2. EDLines： Edge Drawing Lines</h4>
 
 <p>
 「Edge Drawing」という手法でクリーンなエッジのアンカー（固定点）を抽出し、それらを直線セグメントとして繋ぎ合わせる。
@@ -226,6 +223,12 @@ x\cos\theta+y\sin\theta \lt \rho \quad \text{青, 水色の領域}
 
 <p>
 LSDと同等以上の精度を持ちながら、LSDよりも数倍高速に動作する。
+</p>
+
+<h4 style="padding-left:1em;">2-3. ELSED: Enhanced Line SEgment Drawing (2021)</h4>
+
+<p>
+EDLinesの思想（エッジピクセルを繋いでフィッティングする）をベースに、さらに効率的なエッジ追跡アルゴリズム（画素の勾配方向の変化を考慮したドローイング）を取り入れた手法。
 </p>
 
 <h3>3. 深層学習ベース</h3>
@@ -261,6 +264,28 @@ Wireframe Parserを発展させ、エンドツーエンドで高速・高精度�
 
 <p>
 画像内の長距離の依存関係を捉えられるため、途切れがちな長い直線も1本として綺麗に検出できる。
+</p>
+
+<h4 style="padding-left:1em;">3-5.  SACWP (Structural Asymmetric Convolution based Wireframe Parser)  2024</h4>
+
+<p>
+SAC（構造非対称畳み込み）モジュール：<br>
+線分の細長い形状に適合し、不要な背景ノイズを除去する。
+</p>
+
+<p>
+DCFA（拡張畳み込みに基づく特徴集約）モジュール：<br>
+拡張畳み込みを使用してネットワークの受容野を広げる。
+</p>
+
+<h4 style="padding-left:1em;">3-6.  WETR (Wireframe parsing using deformable Transformers)  2025</h4>
+
+<p>
+Wireframe Parsing（建物や室内の直線・交点を同時に検出するタスク）のベンチマーク（ShanghaiTechデータセットやYorkUrbanデータセットなど）でトップクラスの評価（SOTA）を得ている。
+</p>
+
+<p>
+変形可能なトランスフォーマーを用い、動的なオフセットにより、モデルはすべてのピクセルを全体的に処理するのではなく、線の端点、角、および接合点に特化して焦点を合わせることができる。
 </p>
 
 <h3>お試しコード</h3>
@@ -383,6 +408,13 @@ if lines is not None:
 
 <center><img src="images/result_EDLines.png"></center>
 <center>EDLines 結果</center>
+
+<h4 style="padding-left:1em;">Wireframe Parsing</h4>
+
+<p>
+<a href="https://github.com/huangkuns/wireframe">Code of paper "Learning to Parse Wireframes in Images of Man-Made Environments", CVPR 2018</a><br>
+(動作未確認)
+</p>
 
 <h4 style="padding-left:1em;">L-CNN Github
 </h4>
