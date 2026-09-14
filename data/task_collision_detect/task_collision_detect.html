@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>衝突検出</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(タスク) 衝突検出 / 衝突判定</center></h1>
+<h3>何ものか？</h3>
+<p>
+「2つ以上のオブジェクトが互いに交差・接触したか」を判定するプログラム処理のこと。
+</p>
+
+<p>
+オブジェクトの数が増えると、判定対象の組み合わせが多くなるため、2つのフェーズに分けて処理することが多い。
+<div class="styleBullet">
+<ul><li>
+・<strong>Broad Phase</strong> (ブロード・フェーズ / 広域フェーズ)<br>
+「衝突している可能性のあるペア」を高速に絞り込む（culling）ための処理。オブジェクトを包含する単純な形状を使って、高速に判定を行う。
+</li><br><li>
+・<strong>Narrow Phase</strong> (ナロー・フェーズ / 精密フェーズ / 狭域フェーズ)<br>
+Broad Phase（広域フェーズ）で絞り込まれた「衝突の可能性があるオブジェクトのペア」に対して、「本当に衝突しているか」「どの位置で、どのくらい深く交差しているか」を数学的・幾何学的に厳密に計算するフェーズ。<br>
+以下のようなことを計算する。<br>
+・ 衝突の有無 (Boolean)： 接触しているかどうか<br>
+・ 貫通深度 (Penetration Depth）： めり込み具合<br>
+・ 衝突法線 (Collision Normal）: 衝突した面の法線 ・・・ どの方向に移動すれば衝突しなくなるか
+</li></ul></div>
+</p>
+
+<center><img src="images/narrow_broad.svg"></center>
+
+<h3>Broad Phase アルゴリズム</h3>
+
+<h4 style="padding-left:1em;">(1) 並べ替え・時間コヒーレンス型 (Sorting & Temporal Coherence)</h4>
+
+<p>
+<div class="styleBullet">
+<ul><li>
+<strong>Sweep and Prune (SAP) / Sort and Sweep</strong><br>
+・各辺や各面が座標軸に平行な矩形や直方体でオブジェクトを包含する。<br>
+　(AABB: Axis-Aligned Bounding Box　AABB境界ボックス)。<br>
+・境界ボックスの最小値・最大値を各座標軸に投影し、1次元の線分(インターバル)として並べ替える。<br>
+・すべての軸で線分が重なっているペアだけを衝突候補とする。<br>
+<br>
+動画処理の場合、オブジェクトの位置が前のフレームから大きく変わっていない場合は、挿入ソートを使うと、ほぼ整列しているため O(N) に近い高速処理が可能になるらしい･･･
+</li></ul></div>
+</p>
+
+<center><img src="images/sap.svg"></center>
+
+<h4 style="padding-left:1em;">(2) 空間分割型 (Spatial Partitioning)</h4>
+
+<p>
+空間そのものを格子状（グリッド）や階層的に細分化し、「同じ区画、または隣接する区画にいるオブジェクト同士のみをチェックする」という系譜。
+
+<div class="styleBullet">
+<ul><li>
+<strong>Uniform Grid（一様グリッド） / Spatial Hashing（空間ハッシュ）</strong><br>
+空間を一定サイズ（2Dなら正方形、3Dなら立方体）の格子で細切れにする。<br>
+オブジェクトの中心座標やAABBが含まれる格子に登録する。<br>
+広大な空間では、メモリを節約するために格子の座標をハッシュ関数に通して1次元のハッシュテーブルに格納する「Spatial Hashing」が使われる。
+
+
+</li><br><li>
+<strong>Quadtree（四分木・2D用） / Octree（八分木・3D用)</strong><br>
+空間を再帰的に4つ（または8つ）の「子空間」へ等分割していく木構造。オブジェクトが密集しているエリアは細かく分割し、過疎エリアは粗いままにすることで、空間の疎密に柔軟に対応する。
+</li></ul></div>
+</p>
+
+<h4 style="padding-left:1em;">(3) 階層構造型 (Bounding Volume Hierarchy - BVH)</h4>
+
+<p>
+空間ではなく、オブジェクトそのものを木構造でグループ化していく系譜。現代の商用物理エンジンの主流となっている、らしい･･･。
+</p>
+
+<h3>Narrow Phase アルゴリズム</h3>
+
+<h4 style="padding-left:1em;">(1) 形状限定の高速アルゴリズム（Analytical Tests）</h4>
+
+<p>
+球体やカプセル型など、数式で簡単に表せる単純な形状（プリミティブ）同士の判定。<br>オブジェクトの形状自体が単純なので Broad Phase、Narrow Phaseに分類しずらい･･･<br>
+※ カプセル： 線分を球で覆った形状 = 円柱の上下に半球をくっつけた形状のこと。
+
+<div class="styleBullet">
+<ul><li>
+<strong>球 vs 球（Sphere-Sphere）</strong><br>
+ 2つの球の中心点間の距離が、それぞれの半径の合計より小さいかを調べるだけなので、極めて高速。
+</li><br><li>
+
+<strong>カプセル vs カプセル:</strong><br>
+2本の線分間の最短距離を計算し、それが半径の合計以下かを判定する (だけ)。
+</li></ul></div>
+</p>
+
+<h4 style="padding-left:1em;">(2) 凸多面体（Convex）向けの汎用アルゴリズム</h4>
+
+<p>
+「凸多面体（凹みのない形状）」同士の判定アルゴリズム
+
+<div class="styleBullet">
+<ul><li>
+<strong>SAT (Separating Axis Theorem / 分離軸定理)</strong><br>
+2つの物体の間に「光を当てたとき、影が離れるような隙間（分離軸）」が1つでも存在するかを調べる。<br>
+<br>
+3Dの立方体（OBB: Oriented Bounding Box）同士の判定などに強力。すべての軸をチェックして隙間がなければ「衝突している」と判定でき、同時にめり込みの深さや法線も分かる。
+
+<center><img src="images/obb.svg"><center>
+</li><br><li>
+
+<strong>GJKアルゴリズム (Gilbert-Johnson-Keerthi)</strong><br>
+
+『A fast procedure for computing the distance between complex objects in three-dimensional space』 (1988)<br>
+<br>
+2つの形状の「ミンコフスキー差（Minkowski Difference）」という特殊な空間集合を作り、その集合が原点（0, 0, 0）を含むかどうかを調べることで衝突を判定する。<br>
+<center><img src="images/gjk.svg"></center>
+オブジェクト B を移動させた時、ミンコフスキー差が原点(0,0,0)を含むなら オブジェクトAと衝突する。<br>
+<br>
+
+<center><img src="images/gjk2.svg"></center>
+<br>
+物理エンジンのコアとなる超重要アルゴリズムです。球、円柱、凸メッシュなど、どんな凸形状の組み合わせでもこれ1つで一元的に処理できる。
+</li><br><li>
+
+<strong>EPA (Expansion Polytope Algorithm)</strong><br>
+GJK アルゴリズムとセットで使われます。GJKで「衝突している」と分かった後、ミンコフスキー空間のポリゴンを外側に拡張していくことで、正確な「めり込み深さ」と「衝突法線」を算出する。
+
+</li><br><li>
+
+<strong>Lin-Canny アルゴリズム V-Clip</strong><br>
+『An efficient and accurate method for residual distance and feature-based collision detection for moving polyhedra』(1991)<br>
+『V-Clip: Fast and Robust Polyhedral Collision』(1997)<br>
+<br>
+凸多面体の「特徴（頂点・辺・面）間の最短距離」を、ボロノイ領域（Voronoi regions）の概念を用いて追跡する手法。<br>
+<br>
+物体の運動に「時間的・空間的な連続性（コヒーレンス）」がある場合に、前フレームの結果を再利用して極めて高速に計算できる点に革新性があった（後に「V-Clip」として頑健に改良された）。
+
+</li></ul></div>
+
+</p>
+
+<h4 style="padding-left:1em;">(3) 凹多面体（Concave / 複雑な3Dモデル）の判定</h4>
+
+<p>
+<div class="styleBullet">
+<ul><li>
+<strong>凸分解（Convex Decomposition）</strong><br>
+凹多面体を複数の凸多面体の集合（積集合または和集合）に分解し、計算が高速な凸多面体同士の衝突判定アルゴリズム（GJK法やLin-Canny法、分離軸定理など）に帰着させるアプローチ。<br>
+<br>
+<ul><li>
+<strong>完全凸分解 (Exact Convex Decomposition)</strong><br>
+凹多面体を隙間なく、完全に正確な凸多面体のパーツに分割する手法。<br>
+形状によってはパーツ数が爆発的に増加（組合せ爆発）し、実用的なリアルタイム処理が困難になる欠点がある。
+
+</li><br><li>
+<strong>近似的凸分解 (Approximate Convex Decomposition - ACD)</strong><br>
+実用性を重視し、ユーザーが許容できる一定の誤差（凹み）を認めつつ、できるだけ少ない個数の凸多面体に分割する手法。<br>
+<br>
+<strong>V-HACD (Volumetric Hierarchical Approximate Convex Decomposition)</strong><br>
+ゲームエンジン（UnityやUnreal Engineなど）や物理シミュレータ（Bullet Physics、PhysX）で最も広く標準採用されているアルゴリズム。ボクセルベースで階層的に近似分割を行う。
+</li></ul>
+
+</li><br><li>
+<strong>境界表現・BVH（Bounding Volume Hierarchy</strong><br>
+凹多面体の表面（ポリゴンメッシュ）をそのまま扱い、空間構造を木構造（ツリー）で管理することで、判定が必要なポリゴンペアを高速に絞り込むアプローチ。<br>
+<br>
+<ul></li>
+<strong>AABB / OBB Tree</strong><br>
+凹多面体のポリゴン群を、軸平行境界ボックス（AABB）や指向性境界ボックス（OBB）などの簡単な立体（Bounding Volume）で段階的に包み込み、木構造を構築する。<br>
+<br>
+衝突判定時は、まずこの木構造のノード同士の重なりをチェックし、交差していない枝を切り落とす（プルーニング）ことで、最終的に交差する可能性のあるポリゴン同士のみを厳密に判定する。<br>
+<br>
+Broad とか Narrow とか、きれいに分類できず･･･<br>
+</li><br><li>
+<strong>k-D Tree / 八分木 (Octree)</strong><br>
+オブジェクト側ではなく、空間そのものを段階的に分割して凹多面体のポリゴンを格納する手法。静的な背景メッシュと動的オブジェクトの衝突判定などに多用される(らしい･･･)。
+</li></ul></div>
+</p>
+
+<h4 style="padding-left:1em;">(4) 変形する物体への対応（布・流体シミュレーション）</h4>
+
+<p>
+<div class="styleBullet">
+<ul><li>
+<strong>連続的衝突検出 / CCD</strong><br>
+『Robust treatment of collisions, contact and friction for cloth animation』(2002)<br>
+布シミュレーションのリアリティを高めた。
+</li></ul></div>
+</p>
+<center><img src="images/ccd.png"></center>
+
+<h4 style="padding-left:1em;">(5) 微分可能・AI・最適化アプローチ</h4>
+
+<p>
+<div class="styleBullet">
+<ul><li>
+<strong>微分可能な衝突検出</strong><br>
+『Differentiable Collision Detection for a Set of Convex Primitives』(2022)<br>
+衝突検出を凸最適化問題として定式化することで、物体の位置や姿勢に対して完全に微分可能なフレームワーク（DCOL）を提案した(らしい･･･)。
+</li><br><li>
+<strong>SDF (Signed Distance Field) へのニューラルネットワーク適用</strong><br>
+『Efficient Collision Detection Framework for Enhancing Motion Generation in Robotics』(2024)<br>
+<a href="https://sites.google.com/view/icra2025-sdfsc
+">project page</a><br>
+<br>
+空間の各点から物体表面までの符号付き距離を保持する「SDF（Signed Distance Field）」を、軽量なニューラルネットワークで高速に近似・代替するアプローチ。
+</li></ul></div>
+</p>
+    </body>
+    </body>
+</html>
