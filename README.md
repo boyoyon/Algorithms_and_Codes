@@ -34,6 +34,9 @@ AI以前の時代には、研究者が手作りの仮説、アルゴリズムを
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/bresenham/bresenham.html">Bresenham’s Algorithm</a></br>
 
 <h2>C</h2>
+
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_collision_detect/task_collision_detect.html">(タスク) Collision Detection</a><br>
+
 <h2>D</h2>
 
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/dark_channel_prior/dark_channel_prior.html">Dark Channel Prior</a><br>
