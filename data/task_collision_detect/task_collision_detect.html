@@ -163,11 +163,11 @@ Broad Phase（広域フェーズ）で絞り込まれた「衝突の可能性が
 『A fast procedure for computing the distance between complex objects in three-dimensional space』 (1988)<br>
 <br>
 2つの形状の「ミンコフスキー差（Minkowski Difference）」という特殊な空間集合を作り、その集合が原点（0, 0, 0）を含むかどうかを調べることで衝突を判定する。<br>
-<center><img src="images/gjk.svg"></center>
+<center><img src="images/GJK.svg"></center>
 オブジェクト B を移動させた時、ミンコフスキー差が原点(0,0,0)を含むなら オブジェクトAと衝突する。<br>
 <br>
 
-<center><img src="images/gjk2.svg"></center>
+<center><img src="images/GJK2.svg"></center>
 <br>
 物理エンジンのコアとなる超重要アルゴリズムです。球、円柱、凸メッシュなど、どんな凸形状の組み合わせでもこれ1つで一元的に処理できる。
 </li><br><li>
