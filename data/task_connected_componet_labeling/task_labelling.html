@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>連結成分ラベリング</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(タスク) 連結成分ラベリング</center></h1>
+<h3>何ものか？</h3>
+
+<p>
+こんな画像を
+</p>
+
+<center><img src="images/1.png"></center>
+
+<p>
+二値化すると
+</p>
+
+<center><img src="images/2.png"></center>
+
+<p>
+こんな感じになり、数を数えるのは簡単そうに思えるが、コンピューターには二値のデータの集まりにしか見えない。
+</p>
+
+<p>
+画像処理において「繋がっている画素のグループ（連結成分）を見つけ、それぞれに固有の番号（ラベル）を割り当てるタスク」を連結成分ラベリング (CCL: Connected Componet Labeling) という。
+</p>
+
+<center><img src="images/ccl1.svg"></center>
+
+<p>
+「繋がっている」＝「近傍のピクセルとピクセル値が同じ (または差分が閾値以内)である」
+</p>
+
+<p>
+ピクセルの近傍としては、4 近傍と 8 近傍があるので、どちらかを選択する。<br>
+(オレンジ色のピクセルに対して、水色のピクセルを近傍ピクセルとする)
+</p>
+
+<center><img src="images/ccl2.svg"></center>
+
+<h3>手法</h3>
+
+<p>
+連結成分ラベリングの手法としては以下のような系譜がある。
+</p>
+
+<center><img src="images/ccl3.svg"></center>
+
+<h4 style="padding-left:1em;">マルチパス法</h4>
+
+<p>
+<div class="styleBullet">
+<ul><li>
+<strong>2パス法</strong><br>
+[1] 『Sequential operations in digital picture processing』(1966) <br>
+連結成分ラベリングの原点。1回目のスキャンで暫定ラベルを割り当てて同値類テーブルに記録し、2回目のスキャンで正しいラベルに置き換える「2パスアルゴリズム」の基礎を築いた。
+
+</li></ul></div>
+</p>
+
+<h4 style="padding-left:1em;">輪郭追跡法</h4>
+
+<p>
+
+ピクセルの同値処理（Union-Findなど）を嫌い、オブジェクトの境界線を直接トレースすることで、1回の走査（あるいは最小限のアクセス）でラベリングと特徴抽出を同時に行う系統<br>
+
+<div class="styleBullet">
+<ul><li>
+<strong>Suzuki-Abeアルゴリズム</strong><br>
+[2] 『Topological structural analysis of digitized binary images by border following』(1985) <br>
+日本の鈴木智正氏らによる有名な論文（OpenCVの findContours のベース）。輪郭追跡を行うことで、同値類テーブル（Union-Find）を使わずに、物体の外郭と穴の内郭を同時にラベリング・階層構造化する手法を提示した。
+</li><br><li>
+<strong>CTL: Contour Tracking Labeling</strong><br>
+[3] 『A linear-time component-labeling algorithm using contour tracing techniqu』(2004)<br>
+輪郭追跡をさらに発展させ、画像全体を1回スキャンするだけでラベリングと特徴抽出（面積や重心など）を同時に完了させる「真の1パス」に近い効率化を達成した。
+</li></ul></div>
+</p>
+
+<h4 style="padding-left:1em;">決定木とランラングス最適化</h4>
+
+<p>
+「隣接ピクセルの状態によって次に調べるべきピクセルは一意に決まる」という性質から不要なメモリアクセスを減らす決定木アプローチや、ピクセル単位ではなく連続する画素の塊（ラン）単位で処理する手法。
+<div class="styleBullet">
+<ul><li>
+<strong>Fiorio法 (2パス Union-Find法)</strong><br>
+[4] 『Two linear time Union-Find strategies for image labeling』(1996) <br>
+データ構造の「Union-Find（素集合データ構造）」をCCLの同値類解決に本格導入し、理論上および実用上の計算速度を大きく跳ね上げた。
+</li><br><li>
+<strong>SAUF：Smart Array-based Union-Find法</strong><br>
+[5] 『Optimizing connected component labeling algorithms』(2005)<br>
+決定木（Decision Tree）を用いて、ラスタスキャン中に調べるべき近傍ピクセルの数を最小化（8連結なら4画素調べるのを平均1〜2画素に削減）する手法を提案。現代のCPUキャッシュ構造に適合し、高速化を実現した。
+
+</li><br><li>
+<strong>HCS: He, Chao, Suzuki 法</strong><br>
+[6] 『A fast connected-component labeling algorithm using a representative label table"』(2009)<br>
+暫定ラベルを最小値に更新していく従来の無駄を省き、任意の暫定ラベルを代表値として即座にマージする手法（HCSアルゴリズムなど）を提案し、同値類解決のオーバーヘッドをさらに減らした。
+</li></ul></div>
+</p>
+
+
+<h4 style="padding-left:1em;">並列・GPU最適化</h4>
+
+<p>
+<div class="styleBullet">
+<ul><li>
+<strong>BBDT: Block-based Decision Tree法</strong><br>
+[7] 『Parallel graph component labelling with GPUs and CUDA"』(2010)<br>
+GPUの大量のスレッドを用いて、各ピクセルから局所的にラベルを伝播させ、最終的に画像全体の同期をとる並列CCLの初期の重要論文。
+</li><br><li>
+<strong>APL: Active Pixels Labeling法</strong><br>
+[8] 『A new active-pixels approach to connected-component labelling on GPUs』(2018)<br>
+GPUの構造上ボトルネックになりやすいメモリアクセスを減らすため、変化のあった「アクティブなピクセル」のみを効率的に追跡してマージするアルゴリズムを提案した。
+
+</li></ul></div>
+
+</p>
+
+<p>
+連結成分ラベリングのサーベイ論文<br>
+『The connected-component labeling problem: A review of state-of-the-art algorithms』(2017)
+</p>
+
+<h3>アルゴリズム概要</h3>
+
+<h4 style="padding-left:1em;">2パス法</h4>
+
+<p>
+(準備)<br>
+・検出する連結成分の最大数を決め、同値テーブルを作成する。<br>
+　(同値テーブルとは何か？は、おいおいわかってくる)<br>
+・ラベル 1 ～ 最大ラベル番号を、ラベル番号と同じ値で同値テーブルを初期化する。
+</p>
+<center><img src="images/ccl_equiv_table.svg"></center>
+
+<p>
+(1パス目)<br>
+・画面を左上から右下に処理を進めるとする (上→下, 左→右)。
+</p>
+
+<center><img src="images/ccl-pass1-1.svg"></center>
+
+<p>
+・ピンクのピクセルを処理する時点では水色の①②③④のピクセルは処理済である。
+</p>
+
+<center><img src="images/ccl-pass1-2.svg"></center>
+
+<p>
+・ピンクのピクセルの値が 0 の場合<br>
+　→ ラベルバッファの対応する位置に 0 を書く。
+</p>
+
+<center><img src="images/ccl-pass1-3.svg"></center>
+
+<p>
+・ピンクのピクセルの値が 255 で<br>
+　①②③④のラベルバッファの値がすべて 0 の場合<br>
+　→ 同値テーブルから仮ラベルを取得し、ラベルバッファに書く。<br>
+　　(同値テーブルのポインタを 1 つ進める)
+</p>
+
+<center><img src="images/ccl-pass1-4.svg"></center>
+
+<p>
+・ピンクのピクセルの値が 255 で<br>
+　①②③④のラベル値に 0 ではない値がある場合<br>
+　→ ①②③④のラベル値で 0 以外の一番小さいラベル値をピンクのピクセルに対応するラベルバッファに書く。<br>
+　　①②③④のラベル値で最小ではないラベル値に対応する同値テーブルを一番小さいラベル値に更新する。
+</p>
+
+<center><img src="images/ccl-pass1-5.svg"></center>
+
+<p>
+(2パス目)<br>
+・同値テーブルの内容に従って、ラベルバッファのラベルを振り直す。
+</p>
+
+<h3>お試しコード</h3>
+
+<p>
+OpenCV で Suzuki-Abe アルゴリズムをベースにしたラベリングの動作を確認できる。<br>
+(data/task_connected_componet_labeling/src/test_labeling.py)
+</p>
+
+<pre>
+<code style="padding-left:3em;">
+
+import cv2, sys
+import numpy as np
+
+# 二値化の閾値
+TH = 64
+
+argv = sys.argv
+argc = len(argv)
+
+print('%s executes connected component lableing' % argv[0])
+print('[usage] python %s <image>' % argv[0])
+
+if argc < 2:
+    quit()
+
+# 画像をグレースケールで読み込み、二値化する
+gray = cv2.imread(argv[1], cv2.IMREAD_GRAYSCALE)
+binImg = np.zeros(gray.shape, gray.dtype)
+
+binImg[gray > TH] = 255
+binImg[gray <= TH] = 0
+
+nlabels, labels, stats, centroid = cv2.connectedComponentsWithStats(binImg)
+
+</code></pre>
+
+<p>
+・ nlabels：　ラベル数。背景のラベル(0)も含むため、連結成分数＋1 になる。<br>
+・ labels：　ラベルバッファ<br>
+・ stats：　外接矩形の left, top, width, height, 面積(ピクセル数)<br>
+・ centroid:　重心座標
+</p>
+
+<p>
+ラベル番号が同じピクセルに同じ色をつけると、こんな感じになる。
+</p>
+
+<center><img src="images/result_labeling.png"></center>
+
+<p>
+連結成分のサイズも分かるので、サイズでフィルターを掛けることもできる。
+</p>
+
+<center><img src="images/size_filter.png"></center>
+    </body>
+</html>
