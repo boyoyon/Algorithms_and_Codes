@@ -37,6 +37,7 @@ AI以前の時代には、研究者が手作りの仮説、アルゴリズムを
 
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_collision_detect/task_collision_detect.html">(タスク) Collision Detection</a><br>
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_connected_componet_labeling/task_labelling.html">(タスク) Connected Componet Labeling (連結成分ラベリング)</a><br>
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_convex_hull/task_convex_hull.html">(タスク) Convex Hull Problem (凸包問題)</a><br>
 <h2>D</h2>
 
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/dark_channel_prior/dark_channel_prior.html">Dark Channel Prior</a><br>
