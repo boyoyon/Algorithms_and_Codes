@@ -157,5 +157,49 @@ Jack Sklanskyが1982年に提案したオリジナルのアルゴリズムは、
 </li></ul><div>
 </p>
 <center><img src="images/3_coins.svg"></center>
+
+<h3>お試しコード</h3>
+
+<p>
+OpenCV の cv2.convexHull で凸包作成を試すことができる。<br>
+(data/task_convex_hull/src/test_convexhull.py)
+</p>
+
+<pre>
+<code style="padding-left:3em;">
+import numpy as np
+import cv2
+
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1024
+
+points = np.array([[323, 932],
+[310, 827],
+[267, 755],
+[167, 713],
+[126, 658],
+    :
+[766, 400],
+[727, 451],
+[602, 694],
+[581, 781],
+[533, 930]])
+
+screen = np.ones((SCREEN_HEIGHT, SCREEN_WIDTH, 3), np.uint8)
+screen *= 255
+
+cv2.drawContours(screen, [points], 0, (0, 0, 0), 2)
+
+hull = cv2.convexHull(points)
+cv2.drawContours(screen, [hull], 0, (0, 0, 255), 5)
+
+cv2.imshow('screen', screen)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+</code>
+</pre>
+
+<center><img src="images/result_convex_hull.png"></center>
     </body>
 </html>
