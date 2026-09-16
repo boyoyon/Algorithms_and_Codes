@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>凸包問題</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(タスク) Convex Hull Problem (凸包問題)</center></h1>
+<h3>何ものか？</h3>
+<p>
+与えられた多角形を含む凸な多角形を求める問題 （タスク）
+</p>
+<center><img src="images/convex_hull.svg"></center>
+
+<p>
+アルゴリズム提案 → バグ指摘 → アルゴリズム提案 → バグ指摘 → ・・・ の歴史だった･･･
+</p>
+
+<p>
+OpenCV は 1982年の不正解アルゴリズムを使っている模様･･･<br>
+(AIモードによれば)
+</p>
+<p style="padding-left:4em;">
+Jack Sklanskyが1982年に提案したオリジナルのアルゴリズムは、特定の複雑な多角形（自己交差がある場合など）に対して正しく動作しない例外ケースが存在することが後に指摘されています。しかし、OpenCVの実装では内部的にこれらの例外パターンが発生しないよう対策（事前に点をソートする処理など）が組み込まれており、実用上は安定して高速な凸包を計算できるようになっています。
+</p>
+<p>
+とのこと。
+</p>
+
+<p>
+<a href="https://cgm.cs.mcgill.ca/~athens/cs601/">単純多角形に対する線形時間凸包アルゴリズムの歴史</a> に経緯が記されていたので以下に引用する。（なぜか ブラウザで翻訳できず･･･)
+</p>
+<p style="padding-left:4em;">
+1978年までに、点の集合に対する凸包を求める計算量はΩ(n log n)であることが知られており[2]、それを実現する単純なアルゴリズムも提示されていました。当然ながら、こうしたアルゴリズムを用いれば、すべての頂点の座標のみを考慮することで、任意の多角形の凸包を求めることが可能です。しかし、単純多角形が持つ構造を利用すれば、凸包を求める際の計算量を削減するのに十分な情報を得られるのではないか、と考えるのは妥当なことと思われました。
+</p>
+
+<p style="padding-left:4em;">
+線形時間アルゴリズムとして最初に提案されたのは、1972年のSklanskyによるもの[1]でした。それは簡潔かつ洗練されたものでしたが、残念ながら誤りを含んでいました。最初に正当なアルゴリズムを提示したのは、1979年のMcCallumとAvis[3]です。現在、「最良」のアルゴリズムとして一般に認められているのは、1987年のMelkmanによるもの[19]です。このアルゴリズムを凌ぐものが現れる可能性は低いと考えられます。
+</p>
+
+<p style="padding-left:4em;">
+私が見つけたアルゴリズムのリストを、公開日順（時系列）に以下に示します。
+</p>
+
+<p style="padding-left:4em;">
+1972 Sklansky: <span style="color:red;">不正解</span><br>
+
+
+1975 Shamos: <span style="color:red;">不正解</span><br>
+
+1979 McCallum , Avis: 正解<br>
+
+1980 Kim: <span style="color:red;">不正解</span><br>
+
+1982 Sklansky: <span style="color:red;">不正解</span><br>
+
+1983 Lee: 正解<br>
+
+1983 Graham , Yao: 正解<br>
+
+1983 ElGindy, Avis , Toussaint: 正解<br>
+
+1983 Ghosh , Shyamasundar : <span style="color:red;">不正解</span><br>
+
+1984 Bhattacharya , ElGindy: 正解<br>
+
+1985 Preparata and Shamos: 正解<br>
+
+1985 Orlowski: 正解<br>
+
+1986 Shin , Woo: 正解<br>
+
+1986 Werner: <span style="color:red;">不正解</span><br>
+
+1987 Melkman: 正解<br>
+
+1989 Chen: <span style="color:red;">不正解</span><br>
+</p>
+
+<h3>アルゴリズム概要</h3>
+
+<h4 style="padding-left:1em;">Sklanskyの3コインアルゴリズム (1972)</h4>
+
+<p>
+1972年: Sklanskyが「単純多角形の凸包を \(O(n)\) で解ける画期的な方法」として発表。
+</p>
+
+<p>
+数ヶ月後: 研究者のGodfried Toussaintらにより、「特定のくぼみ（凹み）を持つ複雑な多角形では、正しく動作しないケース（反例）」が示され、アルゴリズムが不完全であることが証明された。
+</p>
+
+<p>
+アルゴリズム自体は不完全だったが、「3つの頂点の方向を見て進退を決める」というアプローチ（グラハム・スキャンなどに近い概念）はその後の幾何学アルゴリズムの基礎となった、とのこと。
+</p>
+
+<p>
+<div class="styleBullet">
+<ul><li>
+<strong>前進（スキャン）</strong><br>
+連続する3頂点（\(V_i, V_{i+1}, V_{i+2}\)）が左曲がり（凸の条件を満たす方向）であれば、次の頂点へと進む。
+
+</li><br><li>
+
+<strong>後退（バックトラック）</strong><br>
+もし右曲がり（凹んでいる状態）を検知した場合、凸包の条件に反するため、真ん中の頂点（\(V_{i+1}\)）をリストから排除し、1つ前の頂点に戻って検証をやり直す。
+</li></ul><div>
+</p>
+<center><img src="images/3_coins.svg"></center>
+    </body>
+</html>
