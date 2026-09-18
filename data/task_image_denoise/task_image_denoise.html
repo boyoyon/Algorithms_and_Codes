@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>Image Denoise</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(タスク) Image Denoise (デノイズ / ノイズ除去)</center></h1>
+<h3>何ものか？</h3>
+<p>
+画像に混入してしまったノイズを取り除き、本来の綺麗な画像（クリーン画像）を復元・推定するタスクのこと
+</p>
+
+<h4 style="padding-left:1em;">
+平均 0 のノイズは、平均を取ると 0 になる (あたりまえ・・・だけど、それでノイズを除去できる(こともある))
+</h4>
+
+<p>
+動きの無いシーンに平均 0 のノイズが乗った画像が多数取得できるような状況を考える。<br>
+受け取った画像を平均することで、どの画像よりもノイズが少ない、クリーンな画像が得られる。
+</p>
+
+<center><img src="images/denoise.svg"></center>
+
+<p style="padding-left:4em;">
+・data/task_image_denoise/src/add_gaussian_noise.py (画像ファイル) (ノイズレベル) (作成枚数)<br>
+　でノイジー画像を 100 枚作成し<br>
+・data/task_image_denoise/src/average_images.py　*_noisy*.png<br>
+　でノイジー画像の平均画像を作成した。
+</p>
+
+<br>
+
+<p>
+ノイズを含んだ画像を n 枚足し合わせると、真の値は n 倍になるが、ノイズは増えない。<br>
+∵ 平均 0 のノイズだから･･･
+
+\[
+\begin{array}{c c c c}
+& \text{真の値} & +&  \text{ノイズ(1)} \\
+& \text{真の値} & + & \text{ノイズ(2)} \\
+&　　　　　　　　  & : & \\
++)　& \text{真の値} &+& \text{ノイズ(n)} \\
+\hline
+& \text{（真の値)×n} &+& \text{ノイズ(1)+ノイズ(2)+・・・+ノイズ(n)}
+\end{array}
+\]
+
+平均をとると
+
+\[
+\frac{\text{(真の値)}×\cancel{n}}{\cancel{n}}　+　\underbrace{\frac{\text{ノイズ(1)+ノイズ(2)+・・・+ノイズ(n)}}{n}}_{ノイズの平均に近づく → 0}　\simeq \text{真の値}
+\]
+
+となる。
+</p>
+
+<h4 style="padding-left:1em;">
+画像が 1 枚の場合や、動きのあるシーンの場合
+</h4>
+
+<p>
+上のような状況は実際には少なく、<br>
+・ 1 枚の画像からノイズを除去する　( Single Image Denoising )<br>
+・ 動きのある映像からノイズを除去する ( Video Denoising )<br>
+などが求められる。
+</p>
+
+<p>
+この場合、平均をとるピクセルをどうやって決めるか？
+</p>
+
+<p>
+テキトーにピクセルを集めて
+\[
+\begin{array}{c c c c}
+& \text{真の値A} & +&  \text{ノイズ(1)} \\
+& \text{真の値A} & + & \text{ノイズ(2)} \\
+&　　　　　　　　  & : & \\
+& \text{真の値B} & + & \text{ノイズ(n-1)} \\
++)　& \text{真の値B} &+& \text{ノイズ(n)} \\
+\hline
+& \text{（真の値A)×}n_A+\text{(真の値B)×}n_B+･･･ &+& \text{ノイズ(1)+ノイズ(2)+・・・+ノイズ(n)}
+\end{array}
+\]
+
+平均をとると
+
+\[
+\underbrace{\text{(真の値A)×}\frac{n_A}{n}+\text{(真の値B)×}\frac{n_B}{n}+・・・　}_{\text{色々な(真の値)をブレンドしたものになる　→　ぼける}}+　\underbrace{\frac{\text{ノイズ(1)+ノイズ(2)+・・・+ノイズ(n)}}{n}}_{ノイズの平均に近づく → 0}　\neq \text{真の値}
+\]
+
+となる。
+</p>
+
+<p>
+平均を取ることでノイズを除去するためには、<strong>『真の値』が同じピクセルを推定する</strong> 必要がある。
+</p>
+
+<h3>手法</h3>
+<center><img src="images/denoise_methods.svg"></center>
+
+<p>
+<div class="styleBullet">
+<ul><li>
+
+<strong>空間フィルタリング</strong><br>
+<br>
+入力画像とカーネル (光学系のインパルス応答) を畳み込むことで、光学系をシミュレートする手法。<br>
+カーネルの係数が正のみの場合、近傍ピクセルの加重平均 (微分成分が無く積分のみ)となり、デノイズとして使える。<br>
+<br>
+
+<center><img src="images/spacial_filter.svg"></center>
+<center>カーネルサイズ3×3の場合の空間フィルタ</center>
+<br>
+<ul><li>
+<strong>Box フィルタ (ミーン・フィルタ、移動平均)</strong><br>
+<br>
+近傍ピクセルの単純な平均をとる。
+<center><img src="images/box_filter.svg"></center>
+<center>カーネルサイズ3×3の場合のBOXフィルタ</center>
+<br>
+Box フィルタは線形分離可能なので、「(1×n の) 水平方向のフィルタ処理」→「(n×1 の) 垂直方向のフィルタ処理」と2回実施することで計算量を減らすことができる (\(n^2\) 回の演算 → \(2n\) 回の演算)
+
+<br><br>
+<strong>お試しコード</strong><br>
+・data/task_image_denoise/src/denoise_by_box_filter.py<br>
+・第一引数：ノイジー画像へのパス<br>
+・第二引数：フィルターサイズ (オプション。デフォルトは3)<br>
+・sキー押下で結果画像を保存～終了。それ以外のキー押下で保存せずに終了
+
+<center><img src="images/result_box.svg"></center>
+
+</li><br><li>
+<strong>ガウシアン・フィルタ</strong><br>
+<br>
+近傍ピクセルを単純に平均すると、ぼけが大きくなるので、距離に応じた重み (ガウス関数値) を掛けて平均を取る。<br>
+<br>
+<center><img src="images/gaussian_filter.svg"></center>
+<center>カーネルサイズ3×3の場合のガウシアン・フィルタ</center>
+<br>
+ガウシアン・フィルタも線形分離可能なので、「(1×n の) 水平方向のフィルタ処理」→「(n×1 の) 垂直方向のフィルタ処理」と2回実施することで計算量を減らすことができる (\(n^2\) 回の演算 → \(2n\) 回の演算)
+
+<br><br>
+<strong>お試しコード</strong><br>
+・data/task_image_denoise/src/denoise_by_gaussian_filter.py<br>
+・第一引数：ノイジー画像へのパス<br>
+・第二引数：フィルターサイズ (オプション。デフォルトは3)<br>
+・sキー押下で結果画像を保存～終了。それ以外のキー押下で保存せずに終了
+
+<center><img src="images/result_gaussian.svg"></center>
+
+</li><br><li>
+<strong>メディアン・フィルタ</strong><br>
+<br>
+近傍内に大きいノイズがあったり、真の値が異なるデータがあると、平均がそれらに引っ張られるので、平均ではなく中央値を使う。
+<center><img src="images/median_filter.svg"></center>
+<center>カーネルサイズ 3×3 のメディアン・フィルタ</center>
+
+<br><br>
+<strong>お試しコード</strong><br>
+・data/task_image_denoise/src/denoise_by_median_filter.py<br>
+・第一引数：ノイジー画像へのパス<br>
+・第二引数：フィルターサイズ (オプション。デフォルトは3)<br>
+・sキー押下で結果画像を保存～終了。それ以外のキー押下で保存せずに終了
+<br><br>
+
+<center><img src="images/result_median.svg"></center>
+
+<br>
+メディアン・フィルタは線形非分離なので、2回に分けて計算量を減らすことはできない。<br>
+<br>
+中央値を求める際、毎回ソートし直すのではなく、ヒストグラムにピクセル値を出し入れすることで計算量を減らすことができる。(画像は値域が 0～255 などと、狭いため使えるテクニック)<br>
+
+<center><img src="images/median_filter2.svg"></center>
+
+メディアン・フィルタは前景の角が欠ける、という欠点があり(Corner Rounding 問題)、Multi-Stage Median Filter、Adaptive Median Filter、
+Bilateral Filter、Guided Filterなどが使われている。<br>
+
+<center><img src="images/median_filter3.svg"></center>
+<center>前景の角が背景に負ける。この状況はカーネルサイズを変えても変わらない。</center>
+
+</li><br><li>
+<strong>バイラテラル・フィルタ (Bilateral Filter）</strong><br>
+<br>
+『Bilateral Filtering for Gray and Color Images』 (1998)<br>
+<br>
+「ピクセル間の距離」 (定義域：ドメイン) だけでなく、「ピクセル値の近さ」 (値域：レンジ) も重みに加えた画期的な手法。これにより、エッジを綺麗に残したまま平滑化（Edge-preserving smoothing）できるようになった。<br>
+<br>
+定義域（ドメイン) と値域 (レンジ) の両面 (bilateral) を考慮するので Bilateral Filter。
+<center><img src="images/bilateral_filter.svg"></center>
+<center>カーネルサイズ 3×3 のバイラテラル・フィルタ</center>
+
+<br><br>
+<strong>お試しコード</strong><br>
+・data/task_image_denoise/src/denoise_by_bilateral_filter.py<br>
+・第一引数：ノイジー画像へのパス<br>
+・第二引数：フィルターサイズ (オプション。デフォルトは3)<br>
+・sキー押下で結果画像を保存～終了。それ以外のキー押下で保存せずに終了
+
+<center><img src="images/result_bilateral.svg"></center>
+<center>ノイズが大きいとレンジカーネルの係数が小さくなって効果が出ない</center>
+<br><br>
+
+カーネル内に前景と背景のように、真の値が異なるものが入っても、レンジ・カーネルにより中央ピクセルとピクセル値の異なるピクセルは重みが小さくなり、ぼけは抑制される。<br>
+<br>
+ノイズが大きい場合、レンジ・カーネルにより、デノイズ効果が下がってしまう。
+
+</li><br><li>
+<strong>クロス・バイラテラル・フィルタ (Cross Bilateral Filter / Joint Bilateral Filter)</strong><br>
+<br>
+『Digital Photography with Flash and No-Flash Image Pairs』 Joint Bilateral Filter　(SIGGRAPH 2004)<br>
+『 Flash Photography Enhancement via Intrinsic Relighting』 Cross Bilateral Filter　(SIGGRAPH 2004)<br>
+<br>
+バイラテラル・フィルタのレンジ・カーネルの入力として、「入力画像」とは別に、エッジの位置や構造がはっきり分かっている「参照画像（ガイド画像）」をもう一枚用意し、その参照画像の情報を使って重み付けを行う。<br>
+
+<center><img src="images/cross_bilateral_filter.svg"></center>
+<center>カーネルサイズ 3×3 のクロス・バイラテラル・フィルタ</center>
+<br>
+参照画像の例：<br>
+・ フラッシュ画像：　色合いは不自然だがノイズが少ないフラッシュ画像を使って、<br>
+　　　　　　　　　　色合いは自然だがノイズの多いフラッシュ無し画像をデノイズする。<br>
+・ z-バッファ：　三次元的に離れているものは加重平均の重みを小さくして影響を抑える。
+
+<center><img src="images/flash_no_flash.svg"></center>
+
+</li><br><li>
+<strong>ガイデッド・フィルタ (Guided Filter）</strong><br>
+<br>
+『Guided Image Filtering』 (ECCV 2010, IEEE TPAMI 2013)
+
+<br><br>
+
+バイラテラル・フィルタの「計算量の大きさ」と、「勾配反転（グラデーションの乱れ）アーティファクト」という2つの弱点を改善したエッジ保存型平滑化フィルタ。
+
+<br><br>
+クロス・バイラテラル・フィルタと同様に参照画像を使うことができ、マット処理などにも使用できる。
+
+<br><br>
+
+フラッシュ画像の代わりに、ノイジー画像をガウシアン・フィルターでぼかした画像をガイド画像として使い、出力を次回のガイド画像として使うことを数回繰り返すことで地味に改善する場合がある。
+
+<br><br>
+<center><img src="images/flash_no_flash2.svg"></center>
+<center>data/task_image_denoise/src/gauss_slider.py　(入力画像)<br>data/task_image_denoise/src/guided_filter.py　(入力画像)　(ガイド画像)</center>
+
+<center><img src="images/result_guided.svg"></center>
+
+</li></ul>
+
+</li><br><li>
+<strong>数理モデル・ドメイン変換</strong><br>
+<br>
+データを平均することでノイズを小さくする以外の、信号とノイズの性質の違いを利用したデノイズ手法。
+<br><br>
+<ul><li>
+<strong>Total Variation（TV正則化)</strong><br>
+<br>
+『Nonlinear total variation based noise removal algorithms』 (1992)<br>
+『Chambolle's Projection Algorithm』 (2004) ・・・ TV最小化を高効率に解くための双対最適化アルゴリズム<br>
+『Split Bregman Method』 (2009) ・・・ TVデノイジングの標準的な高速解法
+<br><br>
+
+自然画像の勾配 (ピクセル間差分) のヒストグラムは 「Heavy Tail (太いしっぽ)」 と言われる分布を持つが、ノイズがあると、この分布が変わる。<br>
+
+<center><img src="images/gradient_histogram.svg"></center>
+<center>data/task_image_denoze/src/create_gradient_histrogram.py で作成した</center>
+<br>
+
+画像の「勾配の絶対値の総和」を最小化する最適化問題としてノイズ除去を定式化。<br>
+「フィルタをかける（積分する）」から、「エネルギー関数を最小化する（最適化問題を解く）」へとシフトした。
+
+<br><br>
+
+エッジをシャープに残せるが、グラデーション部分が階段状になる（アーティファクト）問題がある。
+
+<br><br>
+<strong>お試しコード</strong><br>
+・data/task_image_denoise/src/denoise_by_tv.py<br>
+・第一引数：ノイジー画像へのパス<br>
+・第二引数：重み (オプション。デフォルトは 0.05)<br>
+・sキー押下で結果画像を保存～終了。それ以外のキー押下で保存せずに終了
+
+<center><img src="images/result_tv.svg"></center>
+
+</li><br><li>
+<strong>Wavelet Shrinkage</strong><br>
+<br>
+『Ideal spatial adaptation by wavelet shrinkage』 (1994) ・・・ 1次元信号のデノイズ<br>
+『Adapting to unknown smoothness via wavelet shrinkage』 (1995) ・・・ 二次元信号(画像)に応用<br>
+<br>
+
+従来のフーリエ変換は画像全体の周波数成分しか見られず、どこにエッジ（輪郭）があるかという情報を失ってしまう。ウェーブレット変換は「位置」と「周波数」の両方を同時に解析できるため、画像のシャープなエッジを保ったまま、ノイズだけをきれいに分離・除去することに成功した。
+
+<br><br>
+
+ウェーブレット変換を行うと<br>
+・信号： 特定の少数のウェーブレット係数に集約され、その絶対値は大きくなる。<br>
+・ノイズ： 全体のウェーブレット係数に薄く広く分散し、その絶対値は小さくなる。<br>
+　　↓<br>
+・絶対値の小さい係数はノイズとみなしてゼロに近づけ、大きい係数だけを残して逆変換する。<br>
+　　↓<br>
+・デノイズされている。<br>
+<br>
+ということらしい･･･
+
+<br><br>
+<strong>お試しコード</strong><br>
+・data/task_image_denoise/src/denoise_by_wavelet_shrinkage.py<br>
+・第一引数：ノイジー画像へのパス<br>
+・sキー押下で結果画像を保存～終了。それ以外のキー押下で保存せずに終了
+
+<center><img src="images/result_wavelet_shrinkage.svg"></center>
+
+</li><br><li>
+<strong>K-SVD</strong><br>
+<br>
+『 Image Denoising Via Sparse and Redundant Representations Over Learned Dictionaries』 (2006)
+
+<br><br>
+ノイズを含んだ画像そのものからその場で辞書を学習する方法（経時的・適応的）と、高品質な画像データベース（コーパス）であらかじめ学習した辞書を使用する方法の2つを提案し、前者が特に高い効果を発揮することを示した。
+
+<br><br>
+
+信号は、いくつかの基本的なパターン（辞書）をほんの少し組み合わせるだけで表現できるが、ノイズは綺麗に表現できない、という性質を利用して、ノイズだけを削ぎ落とす、らしい･･･
+
+<br><br>
+<strong>お試しコード</strong><br>
+・data/task_image_denoise/src/denoise_by_k_svd.py<br>
+・第一引数：ノイジー画像へのパス<br>
+・sキー押下で結果画像を保存～終了。それ以外のキー押下で保存せずに終了<br>
+※ 辞書作成にかなり時間が掛かる･･･ (500x500程度のサイズの画像で数分程度)
+
+<center><img src="images/result_ksvd.svg"></center>
+
+</li></ul>
+
+
+</li><br><li>
+<strong>非局所・パッチベース</strong><br>
+<br>
+<ul><li>
+<strong>Non-Local Means </strong><br>
+<br>
+『A non-local algorithm for image denoising』 (CVPR 2005)
+<br><br>
+
+画像全体のすべての画素（非局所的・ノンローカル）を対象にし、注目画素の周辺のパッチ（小さな領域）の構造と、画像内の他の場所にあるパッチの構造の類似度（自己類似性）を計算し、類似度が高い画素の値を加重平均することで、エッジやテクスチャを鮮明に保ったままノイズを除去することに成功した。
+
+<br><br>
+<strong>お試しコード</strong><br>
+・data/task_image_denoise/src/denoise_by_nlm.py<br>
+・第一引数：ノイジー画像へのパス<br>
+・第二引数： h (輝度成分の平滑化強度。オプション。デフォルト 30)<br>
+・第三引数： hColor (色成分の平滑化強度。オプション。デフォルト 20)<br>
+・第四引数： templateWindowSize (テンプレートウィンドウのサイズ。オプション。デフォルト 9)<br>
+・第五引数： searchWindowSize (探索ウィンドウのサイズ。オプション。デフォルト 41)<br>
+・sキー押下で結果画像を保存～終了。それ以外のキー押下で保存せずに終了
+
+<center><img src="images/result_nlm.svg"></center>
+
+</li><br><li>
+<strong>BM3D（Block-matching and 3D filtering)</strong><br>
+<br>
+『 Image Denoising by Sparse 3D Transform-Domain Collaborative Filtering』 (2007)
+
+<br><br>
+Non-local Means（自己類似性の利用） と、ウェーブレット変換などの周波数領域でのスパース（希薄）表現 を組み合わせた、非常に強力な画像ノイズ除去アルゴリズム。
+
+<br><br>
+
+<ul><li>
+<strong>1. ブロックマッチング（グループ化）</strong><br>
+画像内から、注目したパッチと類似したパターンを持つパッチを複数見つけ出し、それらを重ね合わせて3次元の配列（3Dブロック）を作る。
+
+</li><br><li>
+<strong>2. 協調フィルタリング（Collaborative Filtering）</strong><br>
+集めた3Dブロックに対して3次元の直交変換（離散コサイン変換やウェーブレット変換など）を施す。類似したブロックが集まっているため、ノイズ以外の画像本来のデータは特定の成分に集中（スパース化）する。ここで閾値処理を行うことで、画像の特徴を綺麗に残したままノイズだけを効果的に除去する。
+</li></ul>
+
+<br><br>
+<strong>お試しコード</strong><br>
+・data/task_image_denoise/src/denoise_by_bm3d.py<br>
+・第一引数：ノイジー画像へのパス<br>
+・第二引数： ノイズレベル (オプション。デフォルト 20)<br>
+・sキー押下で結果画像を保存～終了。それ以外のキー押下で保存せずに終了
+
+<center><img src="images/result_bm3d.svg"></center>
+
+
+</li></ul>
+
+</li><br><li>
+<strong>Deep Learning (CNN)ベース</strong><br>
+<br>
+膨大なデータから「ノイズとは何か」「綺麗な画像とは何か」をニューラルネットワークに直接学習させる。
+
+<br><br>
+
+<ul><li>
+<strong>DnCNN</strong><br>
+<br>
+『Beyond a Gaussian Denoiser: Residual Learning of Deep CNN for Image Denoising』 (2017)
+<br><br>
+クリアな画像を予測するのではなく、画像から「ノイズ成分だけを予測して引き算する（残差学習：Residual Learning）」手法とBatch Normalizationを組み合わせ、BM3D を大きく凌駕した。
+
+</li><br><li>
+<strong>Noise2Noise</strong><br>
+<br>
+『 Noise2Noise: Learning Image Restoration without Clean Data』 (ICML 2018)
+
+<br><br>
+
+正解となるクリア画像を一切使わずに、ノイズ画像同士のペアだけで学習を行っても、クリーンデータで学習したモデルと同等以上の性能でノイズ除去ができる」という事実を統計的なアプローチから証明し、画像復元分野に革命をもたらした。
+
+<br><br>
+
+この発見をきっかけに、のちにペアすら不要で 1 枚のノイズ画像のみから学習する「Noise2Void」 や 「Noise2Self」 といった自己教師あり学習（Self-Supervised Learning）のトレンドへと発展していくことになる。<br>
+<br>
+『Noise2Void - Learning Denoising from Single Noisy Images』 (2019)<br>
+『 Noise2Self: Blind Denoising by Self-Supervision』 (2019)
+
+</li><br><li>
+<strong>MPRNet</strong><br>
+<br>
+
+『Multi-Stage Progressive Image Restoration』 (CVPR 2021)
+
+<br><br>
+複数のステージに分けて段階的に画像を復元するCNNアーキテクチャ。<br>
+Transformerベースの後継モデル「Restormer（CVPR 2022）」などに発展している。
+</li></ul>
+
+</li><br><li>
+<strong>Transformer・拡散モデルベース</strong><br>
+<br>
+CNN はカーネルの局所的な空間 （3x3 や 5x5 など） しか一度に捉えられず、画像全体の構造や、離れた場所にある同様のパターンを反映させるには、層を深く重ねる必要があった。
+
+<br><br>
+
+Transformer は自己注意機構により、画像内の離れたピクセル同士の依存関係を直接、モデリングすることが可能。これにより、テクスチャや規則的なパターンが画像全体に散らばっている場合でも、効果的にノイズと本来の構造を識別できる。
+
+<br><br>
+
+拡散モデルを用いた画像ノイズ除去は、「失われた情報や未知のノイズに対して、極めて高い品質のディテールを 『もっともらしく復元・生成』 できる圧倒的な表現力」にある。
+
+<br><br>
+
+<ul><li>
+<strong>DDPM</strong><br>
+<br>
+
+『Denoising Diffusion Probabilistic Models』 (2020)<br>
+『Diffusion Model for Generative Image Denoising』 (2023)
+
+<br><br>
+生成モデルを「画像デノイジング」タスクに特化させた。
+
+</li><br><li>
+<strong>SwinIR</strong><br>
+<br>
+『SwinIR: Image Restoration Using Swin Transformer』 (2021)
+
+<br><br>
+
+CNN が主流だった画像復元タスクに、Swin Transformerの機構を導入した。
+
+</li><br><li>
+<strong>Restomer</strong><br>
+<br>
+『Restormer: Efficient Transformer for High-Resolution Image Restoration』 (2022)
+<br><br>
+高解像度画像を効率的に処理する仕組みを組み込んだ。<br>
+・MDTA（Multi-Dconv Head Transposed Attention）<br>
+　Attentionの計算量削減<br>
+・GDFN（Gated-Dconv Feed-Forward Network）<br>
+　ゲート機構により不要な情報を抑制
+</lI></ul>
+
+</li></ul></div>
+</p>
+
+    </body>
+</html>
