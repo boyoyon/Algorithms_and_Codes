@@ -526,6 +526,37 @@ CNN が主流だった画像復元タスクに、Swin Transformerの機構を導
 　Attentionの計算量削減<br>
 ・GDFN（Gated-Dconv Feed-Forward Network）<br>
 　ゲート機構により不要な情報を抑制
+
+<br><br>
+<strong>お試しコード</strong><br>
+・https://github.com/swz30/Restormer からコードをダウンロード<br>
+　Code --> Download ZIP<br>
+・Restormer-main.zip を解凍する<br>
+<br>
+・Denoise モデルの重みデータをダウンロードする<br>
+・https://drive.google.com/drive/folders/1Qwsjyny54RZWa7zC4Apg7exixLBo4uF0<br>
+　gaussian_color_denoising_sigma50.pth を右クリック→ダウンロード<br>
+・gaussian_color_denoising_blind.pth にリネームし以下に配置する <br>
+　Restormer-main/Denoising/pretrained_models/gaussian_color_denoising_blind.pth <br>
+<br>
+・実行環境を構築する<br>
+　conda create -y -n restormer python=3.10<br>
+　conda activate restormer<br>
+　pip install torch torchvision<br>
+　pip install scikit-image<br>
+　pip install natsort<br>
+　pip install opencv-python<br>
+　pip install tqdm<br>
+　pip install einops<br>
+<br>
+・デモスクリプトを実行する<br>
+　python demo.py<br>
+　--task Gaussian_Color_Denoising<br>
+　--input_dir (ノイジー画像を収めたディレクトリ)<br>
+　--result_dir (デノイズ結果を格納するディレクトリ)<br>
+<br>
+<center><img src="images/result_restormer.svg"></center>
+<center>ノイズレベル 100 のデノイズは Restormer でも難しかった･･･</center>
 </lI></ul>
 
 </li></ul></div>
