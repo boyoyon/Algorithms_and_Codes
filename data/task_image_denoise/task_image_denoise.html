@@ -321,6 +321,8 @@ denoised = cv2.bilateralFilter(noisy, d=SIZE, sigmaColor=75, sigmaSpace=75)
 <br><br>
 クロス・バイラテラル・フィルタと同様に参照画像を使うことができ、マット処理などにも使用できる。
 
+<center><img src="images/feathering.svg"><center>
+<center>背景が単調で輪郭が複雑な画像のマット画像精緻化</center>
 <br><br>
 
 フラッシュ画像の代わりに、ノイジー画像をガウシアン・フィルターでぼかした画像をガイド画像として使い、出力を次回のガイド画像として使うことを数回繰り返すことで地味に改善する場合がある。
