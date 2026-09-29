@@ -234,15 +234,15 @@ dst = cv2.merge((b, g, r))
 </code>
 </pre>
 
-<!--
 <p style="padding-left:1em;">(蛇足)</p>
 <p>
 オリジナルのヒストグラムと均等化したヒストグラムが得られるので、2つのヒストグラムを内挿、外挿することで画像を手動補正することができる。<br>
 (自動で処理できるというヒストグラム均等化の主旨からは逸れるが･･･)<br>
-Blue, Green, Red 別々に補正量を選ぶことでホワイトバランスの手動調整のようなことが実現できる。<br>
+Blue, Green, Red 別々に補正量を選ぶことでホワイトバランスの手動調整のようなことが実現できる。(いじっていると、何が正解か判らなくなるが･･･)<br>
 (data/task_image_enhancement/src/simple_white_balance_by_he.py)
 </p>
--->
+
+<center><img src="images/simple_white_balance.png"></center>
 
 <h4 style="padding-left:1em">AHE:　Adaptive Histogram Equalization</h4>
 <p>
