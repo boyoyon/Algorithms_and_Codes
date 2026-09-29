@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>image enhancement</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(タスク) Image Enhancement (画像強調)</center></h1>
+<h3>何ものか？</h3>
+<p>
+画像の明るさやコントラストを調整して、人間の目やAIにとって「見やすく（認識しやすく）」するタスク。
+</p>
+
+<center><img src="images/image_enhancement.svg"></center>
+
+<h4 style="padding-left:1em">γ補正</h4>
+<p>
+当時登場したブラウン管（CRT: Cathode Ray Tube）ディスプレイは、「入力された電圧」と「画面の発光輝度」が比例せず、電圧を2.2乗（あるいはそれ以上）した形（非線形）の明るさで表示してしまう物理的特性（ガンマ特性）を持っていました。<br>
+(data/task_image_enhancement/src/image_gamma.py)
+</p>
+
+<center><img src="images/gamma1.svg"></center>
+
+<p>
+
+そのまま映像信号を送ると画面が暗くなりすぎるため、あらかじめ放送（送信）側で信号を「1/2.2乗」に逆補正しておく必要がありました。これが「ガンマ補正」です。<br>
+(data/task_image_enhancement/src/image_inverse_gamma.py)
+</p>
+
+<center><img src="images/gamma2.svg"></center>
+
+<p><strong>γ補正のγ</strong></p>
+<p style="padding-left:3em;">
+
+「ガンマ」という言葉自体は、テレビの誕生よりも前に写真工学の分野で「フィルムのコントラスト特性」を表す指標として使われていました。テレビ放送の黎明期（1930年代〜1940年代）に、写真の理論をそのままテレビの電子工学に応用したことで、自然発生的かつ組織的にシステムへ組み込まれていきました。
+
+<br><br>
+
+写真のネガフィルムにおいて、露出量（光の強さ）と画像の密度（黒さ）の関係をグラフ化した際、その直線の「傾き（コントラスト）」をギリシャ文字の \(\gamma \)（ガンマ） で表すことを最初に考案したのは、1890年代の写真化学者 フェルディナント・ハーター（Ferdinand Hurter） と ヴェロ・チャールズ・ドリフィールド（Vero Charles Driffield） です。彼らの頭文字を取って「H&D曲線」とも呼ばれますが、この時点で画像工学における「ガンマ＝階調の特性・再現性」という意味が定着しました。
+<br>
+(数学や物理の計算式において、入出力の関係（特性曲線）を表す「指数（べき乗の数値）」として伝統的にγが使われていた)
+</p>
+
+<p><strong>γ補正の歴史</strong></p>
+<p style="padding-left:3em;">
+
+1930年代に登場した初期のテレビカメラ用撮像管であるアイコノスコープ（Iconoscope）などは、光の入力に対して出力される電気信号が、<strong><span style="color:magenta;">偶然にも「最初から非線形（対数に近い曲線、γ≒0.45〜0.5付近）」になるという物理的性質を持っていました。</span></strong>
+
+<br><br>
+
+この撮像管の「不完全さ」が、結果的にブラウン管の非線形性を打ち消す役割を果たしたため、<strong><span style="color:magenta;">初期のシステムでは専用の補正回路をほとんど組まなくても、システム全体でバランスが取れるという「幸運な一致」が起きていました。</span></strong>
+
+<br><br>
+
+1940年代に入り、より感度が高く光に対して「線形（リニア、γ≒1.0）」に反応する次世代の撮像管（オルシコンやCPSエミトロンなど）が登場すると、ブラウン管（CRT）の非線形な特性（電圧に対して明るさが2乗以上で増える問題）を補正しなければ、映像の「中間調（グレー）」が極端に暗くなってしまうことがエンジニアたちの間で広く認識されるようになりました。
+
+<br><br>
+
+この問題を国家レベルの技術規格として議論し、「テレビカメラ側で一括してあらかじめ逆補正（逆ガンマ）をかけて送信するべきだ」 と正式に決定・提唱したのが、アメリカの NTSC（National Television System Committee：全米テレビ標準化委員会） です。
+
+<br><br>
+
+black-and-white（白黒テレビ）の規格を策定した 1940年〜1941年 の第1次NTSCにおいて基本的な考え方がまとめられました。
+
+<br><br>
+
+その後、1953年のカラーテレビ規格（第2次NTSC）において「ガンマ値 2.2」を基準とする補正が明確に組み込まれ、世界的な標準となりました。
+
+</p>
+
+
+<h4 style="padding-left:1em">コントラスト延伸 (線形変換)</h4>
+<p>
+
+1964年、米NASAのジェット推進研究所（JPL）が月探査機「<a href="https://ja.wikipedia.org/wiki/レインジャー7号">レンジャー7号</a>」が撮影した月面写真のノイズ除去や鮮明化を行いました。これが近代デジタル画像処理の始まりとされています。
+
+</p><p>
+
+当時の計算機は性能が非常に低く、複雑な計算はできませんでした。そのため、画像の全画素に対して「\(Y = aX + b\)」という最も単純な一次関数（線形変換）を適用し、コントラストが低くぼやけた画像の明暗を単純に引き伸ばす処理（コントラストストレッチング）が初期の定番として多用されました。
+
+</p>
+<center><img src="images/expand_histogram.svg"></center>
+
+<p>
+・ヒストグラム作成<br>
+　(data/task_image_enhancement/src/create_histogram.py)<br>
+　- 第一引数：画像ファイルへのパス<br>
+　- 第二引数：opencv/numpy/なし(自分でピクセル数を数える) ･･･ ヒストグラム作成関数の選択<br>
+　ヒストグラム延伸すると白飛びするので、上の図では、最大輝度を除いてヒストグラムを正規化した。
+</p>
+
+<p>
+・ヒストグラム延伸<br>
+　(data/task_image_enhancement/src/expand_histogram.py)<br>
+　トラックバーで min と max を指定し、その範囲を 0～255 に延伸する。
+</p>
+
+<p>
+ヒストグラムの形は保存されるが、min と max を指定する必要がある。<br>
+(または、ヒストグラムの上下○○％削除と指定する)
+</p>
+
+<h4 style="padding-left:1em">HE:　Histogram Equalization (ヒストグラム均等化、 ヒストグラム平坦化)</h4>
+<p>
+
+1970年代に入ると計算機の性能が向上し、画像全体の「統計データ（ヒストグラム）」を瞬時に取得・計算できるようになりました。
+
+</p><p>
+
+それまでの線形変換やガンマ補正は「人間が画像を見ながらパラメータ（\(a\) や \(\gamma \)）を手動で調整する」必要がありました。これに対し、「人間の主観に頼らず、計算機が自動で最適なコントラストに調整するアルゴリズム」として提案されたのがヒストグラム平坦化です。
+
+</p><p>
+
+画像全体の輝度分布の累積分布関数（CDF）を利用し、どんな偏った画像でも「確率的に均等な分布」へ自動変換する理論が確立され、医療用X線写真や戦闘機コックピットの自動鮮明化などで大活躍しました
+
+</p>
+
+<p>
+<strong>アルゴリズム概要</strong>
+</p>
+
+<p style="padding-left:3em;">
+・ヒストグラムを作成する ・・・ 同じピクセル値を持つピクセル (同値類) を台車に積んで並べるイメージ
+</p>
+
+<center><img src="images/he1.svg"></center>
+
+<p style="padding-left:3em;">
+・ヒストグラムを累積する
+</p>
+
+<center><img src="images/he2.svg"></center>
+
+<p style="padding-left:3em;">
+・累積ヒストグラムが直線になるように台車を移動する
+</p>
+
+<center><img src="images/he3.svg"></center>
+
+<p>
+コードの断片<br>
+(data/task_image_enhancement/src/he_from_the_scratch.py)
+</p>
+
+<pre>
+<code style="padding-left:3em;">
+# 台車用配列をクリア
+equivs = []
+
+# ピクセル値の同じピクセル(同値類)の座標 (y座標の配列, x座標の配列) を台車 (equivs) に乗せる
+for i in range(256):
+    equivs.append(np.where(channel == i))
+
+# 累積ヒストグラムを初期化
+sum = 0
+
+for i in range(256):
+    # 同値類のピクセルのy座標の数＝ヒストグラムを累算する
+    sum += len(equivs[i][0])
+
+    # 累積ヒストグラムが直線になるように台車を移動する (ピクセル値を更新する)
+    equalized[equivs[i]] = 255 * sum // nr_pixels
+</code>
+</pre>
+
+<p>
+OpenCV を使えば、関数(cv2.equalizeHist()) を呼び出すだけ<br>
+(data/task_image_enhancement/src/he_by_opencv.py)
+</p>
+
+<pre>
+<code style="padding-left:3em;">
+# カラー・プレーンに分割
+b, g, r = cv2.split(src)
+
+# プレーン毎に Histogram Equalization を実行
+b = cv2.equalizeHist(b)
+g = cv2.equalizeHist(g)
+r = cv2.equalizeHist(r)
+
+# カラー・プレーンをマージ
+dst = cv2.merge((b, g, r))
+</code>
+</pre>
+
+<!--
+<p style="padding-left:1em;">(蛇足)</p>
+<p>
+オリジナルのヒストグラムと均等化したヒストグラムが得られるので、2つのヒストグラムを内挿、外挿することで画像を手動補正することができる。<br>
+(自動で処理できるというヒストグラム均等化の主旨からは逸れるが･･･)<br>
+Blue, Green, Red 別々に補正量を選ぶことでホワイトバランスの手動調整のようなことが実現できる。<br>
+(data/task_image_enhancement/src/simple_white_balance_by_he.py)
+</p>
+-->
+
+<h4 style="padding-left:1em">AHE:　Adaptive Histogram Equalization</h4>
+<p>
+スティーブン・パイザー（Stephen M. Pizer）らによって、論文『Adaptive Histogram Equalization and Its Variations』の中で正式に提案されました。元々は航空機のコックピットディスプレイ用や医療画像（X線やMRIなど）の視認性を自動で向上させる目的で開発されました。
+</p>
+
+<p>
+画像全体ではなく、画素の周辺領域（ローカル）ごとの統計情報を基に平坦化を行う。
+</p>
+
+<h4 style="padding-left:1em">CLAHE:　Contrast Limited Adaptive Histogram Equalization</h4>
+<p>
+カレル・ザイダーフェルト（Karel Zuiderveld）によって、有名な技術書シリーズ『Graphics Gems IV』の第VIII.5章として発表されました。AHEの弱点（平坦な領域でノイズまで過剰に強調してしまう問題）を克服するため、ヒストグラムに「上限（クリップリミット）」を設けてノイズの増幅を抑える改良を加えた手法です。
+</p>
+
+<p>
+画像をいくつかのタイル（小領域）に分割し、コントラストの増幅率に制限をかけながら平坦化する。AHEのノイズ問題を劇的に改善。境界を滑らかにつなぐ補間処理（バイリニアなど）も行う。
+</p>
+
+<p>
+<strong>アルゴリズム概要</strong><br>
+(1) ヒストグラムをクリッピングする。
+</p>
+
+<p style="padding-left:3em;">
+ヒストグラムの１つのビンに入るピクセル数を制限し、あふれた分を全ビンに等分配する<br>
+→ ヒストグラムは平坦に近づき、累積ヒストグラムは直線に近づく。<br>
+→ 補正量は少なくなる<br>
+→ Histogram Equalization のやりすぎが抑えられる
+</p>
+
+
+<center><img src="images/limit2.svg"></center>
+
+<p style="padding-left:3em;">
+コードの断片<br>
+(data/task_image_enhancement/src/he_from_the_scratch_with_contrast_limitation.py)
+</p>
+
+<pre>
+<code style="padding-left:3em;">
+sum = 0
+clipped = 0
+
+# ヒストグラムの1つのビンに入るピクセル数を制限し、あふれた分を clipped に集める
+for idx in range(256):
+    if histogram[idx] > th:
+        clipped += histogram[idx] - th
+        histogram[idx] = th
+
+# あふれた分を 256 等分してすべてのビンに加える
+for idx in range(256):
+    sum += histogram[idx] + clipped // 256
+    newValue[idx] = 255 * sum // nrPixels
+</code>
+</pre>
+
+<center><img src="images/limit.svg"></center>
+<center>いくつに制限したらちょうど良いのか？<br>Histogram Equalization の自動で調整可能の良さは失われる</center>
+<center>この例はコントラスト補正というより、ホワイトバランス調整っぽくなってしまった</center>
+
+<p>
+(2) 画像を小領域に分けて制限付き Histogram Equalizationを実施
+</p>
+
+<p style="padding-left:3em;">
+各小領域の累積ヒストグラムに従った輝度の補正をバイリニア補間する
+</p>
+<center><img src="images/clahe.svg"></center>
+<p>
+OpenCV を使えば、関数(clahe.apply()) を呼び出すだけ<br>
+(data/task_image_enhancement/src/clahe_by_opencv.py)
+</p>
+
+<pre>
+<code style="padding-left:3em;">
+# clahe オブジェクト作成
+clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(2,2))
+
+#  カラー・プレーンに分割
+b, g, r = cv2.split(src)
+
+# CLAHE を適用
+dst_b = clahe.apply(b)
+dst_g = clahe.apply(g)
+dst_r = clahe.apply(r)
+
+# カラー・プレーンをマージ
+dst = cv2.merge((dst_b, dst_g, dst_r))
+</code>
+</pre>
+
+<center><img src="images/clahe2.svg"></center>
+
+<h4 style="padding-left:1em">トーンカーブ補正</h4>
+<p>
+ガンマ補正、線形変換、対数変換など、これまで個別の数式で処理していたすべての階調変換を、「1つの自由な曲線（ベジェ曲線など）で直感的に操作できるように統合したインターフェース」として、Adobe Photoshopなどの画像編集ソフトに搭載されました。
+
+</p>
+
+<h4 style="padding-left:1em">HDR: High Dynamic Rang</h4>
+
+<p>
+フランスの写真家Gustave Le Gray（ギュスターヴ・ル・グレイ）が、海と空の明暗差を同時に表現するために、露出を変えた2枚のネガを暗室で合成（コンビネーション・プリント）しました。これが世界初のHDR写真の試みとされています。
+</p>
+
+<p>
+現代のコンピューターによるHDR Imaging（複数枚の画像から物理的な輝度情報を計算・合成する手法）は、1993年にスティーブ・マン（Steve Mann）教授らによって数理的な手法が開発・特許出願されました。<br>
+<a href="https://en.wikipedia.org/wiki/Multi-exposure_HDR_capture">Multi-exposure_HDR_capture</a>
+</p>
+
+<center><img src="images/hdr.svg"></center>
+
+<p>
+※ 後で出てくる Exposure Fusion を使うと HDR作成工程をスキップできる。
+</p>
+
+<h4 style="padding-left:1em">Detail Enhancement</h4>
+
+<p>
+ 1998年に提案されたエッジ保存型非線形フィルターである「バイラテラルフィルター（Bilateral Filter）」を、2002年にフレド・デュランド（Frédo Durand）氏らがHDR（ハイダイナミックレンジ）画像のトーンマッピングやディテール強調に初めて応用しました。
+</p>
+
+<p>
+『Spatially Varying Pixel Exposures for High Dynamic Range Imagery』 (SIGGRAPG1995)<br>
+
+『Recovering High Dynamic Range Radiance Maps from Photographs』 (SIGGRAPH 1997)<br>
+『Image Smoothing via \(L_{0}\) Gradient Minimization』 (SIGGRAPH Asia 2011)
+</p>
+
+<p>
+コントラスト調整だけでは、被写体が明るくなりすぎたり、暗くなりすぎたりする。
+</p>
+
+<center><img src="images/detail_enhancement.svg"></center>
+
+<p>
+エッジ保存スムージングと組み合わせることで、画像や映像の細かい輪郭や質感（テクスチャ）をくっきりと際立たせ、解像感やシャープさを高めることができる （Detail Enhancement)
+</p>
+
+<center><img src="images/detail_enhancement2.svg"></center>
+<center><img src="images/detail_enhancement3.svg"></center>
+
+<p>
+コードは <a href="https://github.com/boyoyon/L0Enhancement">L0Enhancement</a> 参照
+
+</p>
+
+<h4 style="padding-left:1em">Exposure Fusion</h4>
+<p>
+『Exposure Fusion: A Simple and Practical Alternative to High Dynamic Range Photography』 (2007)
+</p>
+
+<p>
+従来のHDR（ハイダイナミックレンジ）技術は、「複数枚の画像を一度1つの高ビット（HDR）輝度マップに統合し、それをさらにトーンマッピングと呼ばれる技術で通常のモニターに表示できるLDR画像に変換する」という複雑なプロセスを必要としていました。
+</p>
+
+<p>
+これに対しこの論文が提案した "Exposure Fusion" は、中間のHDR画像を生成することなく、複数枚の露出（輝度）が異なる画像から「最も状態の良いピクセル」を直接抽出して1枚の画像に融合する手法です
+</p>
+
+<center><img src="images/exposure_fusion.svg"></center>
+
+<p>
+多段階露出だけでなく、色々なパラメータで補正した画像の『いいとこどり』した画像を作成することもできる
+</p>
+
+<p>
+コードは <a href="https://github.com/boyoyon/ExposureFusion">Exposure Fusion</a> 参照
+
+</p>
+
+    </body>
+</html>
