@@ -48,6 +48,7 @@ AI以前の時代には、研究者が手作りの仮説、アルゴリズムを
 <h2>H</h2>
 <h2>I</h2>
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_image_denoise/task_image_denoise.html">(タスク) Image Denoising</a><br>
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_image_enhancement/task_image_enhancement.html">(タスク) Image Enhancement</a><br>
 <h2>J</h2>
 <h2>K</h2>
 <h2>L</h2>
