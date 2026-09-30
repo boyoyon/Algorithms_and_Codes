@@ -411,9 +411,35 @@ dst = cv2.merge((dst_b, dst_g, dst_r))
 </p>
 
 <p>
-コードは <a href="https://github.com/boyoyon/ExposureFusion">Exposure Fusion</a> 参照
-
+(コードの断片)
+(data/tasuk_image_enhancement/src/exposure_fusion.py)<br>
+引数で <br>
+・(画像ファイル1へのパス) 　(画像ファイル2へのパス) 　(画像ファイル3へのパス)  ･･･<br>
+と指定するか<br>
+・(画像ファイルへのワイルドカード)　(例： image_0*.png)<br> 
+と指定する。
 </p>
 
+<pre>
+<code style="padding-left:3em;">
+# Exposure Fusion モジュールのオブジェクトを作成する
+mergeMertens = cv2.createMergeMertens()
+
+# 画像のリストを渡すとフュージョンしてくれる
+exposureFusion = mergeMertens.process(images)
+</code>
+</pre>
+
+<p>
+(蛇足)<br>
+(data/tasuk_image_enhancement/src/he_by_dividing_image_into_tiles_and_exposure_fusion.py)<br>
+<br>
+・ 1枚の画像をタイルに分割<br>
+・ 各タイルで累積ヒストグラムを作成し、各輝度値に対する補正量を取得<br>
+・ 全画面に適用 → タイル数の数だけ補正画像ができる<br>
+・ Exposure Fusion で1枚の画像に融合<br>
+
+</p>
+<center><img src="images/fusion.svg"></center>
     </body>
 </html>
