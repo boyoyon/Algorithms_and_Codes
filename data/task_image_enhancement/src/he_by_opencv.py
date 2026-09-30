@@ -1,4 +1,4 @@
-import cv2, sys
+import cv2, os, sys
 
 argv= sys.argv
 argc = len(argv)
