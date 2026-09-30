@@ -2,14 +2,14 @@ import numpy as np
 import cv2, os, sys
 
 ESC_KEY = 27
-CDF = None
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1024
+SCALE = 1.0
 
 def callback(x):
     pass # do nothing
 
 def display_cdf(image):
-
-    global CDF
 
     CDF = np.ones((256,256,3), np.uint8)
     CDF *= 255
@@ -57,8 +57,8 @@ if src is None:
     print('failed to load image %s' % argv[1])
     quit()
 
-
-cv2.imshow('original', src)
+src_clone = src.copy()
+cv2.imshow('original', src_clone)
 
 H, W = src.shape[:2]
 nr_pixels = H * W
@@ -109,8 +109,14 @@ cv2.setTrackbarPos('red', 'dst', red+50)
 
 dst_channels = cv2.split(dst)
 
-print('Hit ESC-key to quit')
-print('Hit s-key to save and terminate')
+print('Hit ESC key to quit')
+print('Hit s key to save and terminate')
+print('Hit + key to scale up the image')
+print('Hit - key to scale down the image')
+
+fRatio = True
+fScale = True
+prev_scale = -1
 
 while True:
 
@@ -123,6 +129,12 @@ while True:
     if key == ESC_KEY or key == ord('s') or key == ord('S'):
         break
     
+    elif key == ord('+'):
+        SCALE *= 1.1
+
+    elif key == ord('-'):
+        SCALE *= 0.9
+
     if blue != prev_blue or green != prev_green or red != prev_red:
 
         if blue != prev_blue:
@@ -150,8 +162,43 @@ while True:
             prev_red = red
 
         dst = cv2.merge(dst_channels)
-        cv2.imshow('dst', dst)
-        display_cdf(dst)
+        fRatio = True
+
+    if SCALE != prev_scale:
+        fScale = True
+        prev_scale = SCALE
+
+    if fRatio or fScale:
+        if SCALE != 1.0:
+
+            w = int(W * SCALE)
+            h = int(H * SCALE)
+            dst_clone = cv2.resize(dst, (w, h))
+            src_clone = cv2.resize(src, (w, h))
+            cv2.imshow('original', src_clone)
+
+            if fScale:
+                cv2.destroyWindow('dst')
+                cv2.imshow('dst', dst_clone)
+                cv2.createTrackbar('blue',   'dst', 1, 200, callback)
+                cv2.setTrackbarPos('blue', 'dst', blue+50)
+                cv2.createTrackbar('green', 'dst', 1, 200, callback)
+                cv2.setTrackbarPos('green', 'dst', green+50)
+                cv2.createTrackbar('red',     'dst', 1, 200, callback)
+                cv2.setTrackbarPos('red', 'dst', red+50)
+            else:
+                cv2.imshow('dst', dst_clone)
+
+        else:
+            dst_clone = dst.copy()
+            cv2.imshow('dst', dst_clone)
+
+        if fRatio:
+            display_cdf(dst)
+            fRatio = False
+
+        if fScale:
+            fScale= False
 
 if key == ord('s') or key == ord('S'):
 
