@@ -1,15 +1,9 @@
+# pip install opencv-contrib-python
+
 import os, sys, cv2
 from cv2.ximgproc import guidedFilter
 
-"""
- preparation
-
- > python -m pip install opencv-contrib-python
-
-"""
-
-# import numpy as np
-import copy
+ESC_KEY = 27
 
 def callback(x):
     pass # do nothing
@@ -27,7 +21,7 @@ print('Hit ESC-key to terminate this program')
 img = cv2.imread(argv[1], cv2.IMREAD_COLOR)
 #img = cv2.imread(argv[1], cv2.IMREAD_GRAYSCALE)
 #img = cv2.imread(argv[1], cv2.IMREAD_UNCHANGED)
-out = copy.copy(img)
+out = img.copy()
 
 if argc > 2:
     guide = cv2.imread(argv[2])
@@ -45,7 +39,10 @@ cv2.setTrackbarPos('sigma', 'image', 500)
 prev_size = 1
 prev_sigma = 500
 
-while(1):
+print('Hit s-key to save and terminate')
+print('Hit ESC-key to quit') 
+
+while True:
     # retrieve the current position of trackbar
     size = cv2.getTrackbarPos('size', 'image') * 2 + 1 
     sigma = cv2.getTrackbarPos('sigma', 'image')
@@ -60,9 +57,16 @@ while(1):
         cv2.imshow('image', out)
 
     key = cv2.waitKey(100)
-    if(key == 27):
+    if key == ESC_KEY or key == ord('s') or key == ord('S'):
         break
 
-cv2.imwrite('guided_%d.png' % size, out)
-
 cv2.destroyAllWindows()
+
+if key == ord('s') or key == ord('S'):
+
+    base = os.path.basename(argv[1])
+    filename = os.path.splitext(base)[0]
+    dst_path = '%s_size%d_sigma%d.png' % (filename, size, sigma)
+
+    cv2.imwrite(dst_path, out)
+    print('save %s' % dst_path)
