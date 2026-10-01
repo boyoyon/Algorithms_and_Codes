@@ -267,6 +267,11 @@ Bilateral Filter、Guided Filterなどが使われている。<br>
 <center><img src="images/bilateral_filter.svg"></center>
 <center>カーネルサイズ 3×3 のバイラテラル・フィルタ</center>
 
+<br>
+
+カーネル内に前景と背景のように、真の値が異なるものが入っても、レンジ・カーネルにより中央ピクセルとピクセル値の異なるピクセルは重みが小さくなり、ぼけは抑制される。<br>
+<br>
+ノイズが大きい場合、レンジ・カーネルにより、デノイズ効果が下がってしまう。
 <br><br>
 <strong>お試しコード</strong><br>
 ・data/task_image_denoise/src/denoise_by_bilateral_filter.py<br>
@@ -285,11 +290,6 @@ denoised = cv2.bilateralFilter(noisy, d=SIZE, sigmaColor=75, sigmaSpace=75)
 
 <center><img src="images/result_bilateral.svg"></center>
 <center>ノイズが大きいとレンジカーネルの係数が小さくなって効果が出ない</center>
-<br><br>
-
-カーネル内に前景と背景のように、真の値が異なるものが入っても、レンジ・カーネルにより中央ピクセルとピクセル値の異なるピクセルは重みが小さくなり、ぼけは抑制される。<br>
-<br>
-ノイズが大きい場合、レンジ・カーネルにより、デノイズ効果が下がってしまう。
 
 </li><br><li>
 <strong>クロス・バイラテラル・フィルタ (Cross Bilateral Filter / Joint Bilateral Filter)</strong><br>
@@ -321,17 +321,34 @@ denoised = cv2.bilateralFilter(noisy, d=SIZE, sigmaColor=75, sigmaSpace=75)
 <br><br>
 クロス・バイラテラル・フィルタと同様に参照画像を使うことができ、マット処理などにも使用できる。
 
-<center><img src="images/feathering.svg"><center>
+<br><br>
+
+<center><img src="images/feathering.svg"></center>
 <center>背景が単調で輪郭が複雑な画像のマット画像精緻化</center>
+<br>
+<center>data/task_image_denoise/src/guided_filter.py　(入力画像)　(ガイド画像)</center>
+
+<br>
+① Guided Filterを使って大雑把なマット画像を精緻化する<br>
+
+② 精緻化したマット画像を使ってマット処理を実行する<br>
+　　data/task_image_denoise/src/blend_with_matte.py　(前景画像)　(マット画像)　(背景画像) [(左上x座標)　(左上y座標)]
+
 <br><br>
 
 フラッシュ画像の代わりに、ノイジー画像をガウシアン・フィルターでぼかした画像をガイド画像として使い、出力を次回のガイド画像として使うことを数回繰り返すことで地味に改善する場合がある。
 
 <br><br>
 <center><img src="images/flash_no_flash2.svg"></center>
-<center>data/task_image_denoise/src/gauss_slider.py　(入力画像)<br>data/task_image_denoise/src/guided_filter.py　(入力画像)　(ガイド画像)</center>
 
-<center><img src="images/result_guided.svg"></center>
+<br>
+
+① ガウシアンフィルタでノイズをぼかし、初期ガイド画像を作成する<br>
+　　data/task_image_denoise/src/gauss_slider.py　(入力画像)}<br>
+② パラメータ(size,sigma)を決める<br>
+　　data/task_image_denoise/src/guided_filter.py　(入力画像)　(ガイド画像)<br>
+③ 自動反復<br>
+　　data/task_image_denoise/src/guided_filter_iterativ.py　(入力画像)　(ガイド画像) [(size) (sigma)]
 
 </li></ul>
 
@@ -348,7 +365,7 @@ denoised = cv2.bilateralFilter(noisy, d=SIZE, sigmaColor=75, sigmaSpace=75)
 『Split Bregman Method』 (2009) ・・・ TVデノイジングの標準的な高速解法
 <br><br>
 
-自然画像の勾配 (ピクセル間差分) のヒストグラムは 「Heavy Tail (太いしっぽ)」 と言われる分布を持つが、ノイズがあると、この分布が変わる。<br>
+自然画像の勾配 (ピクセル間差分) のヒストグラムは 「Heavy Tail (太いしっぽ)」 と言われる分布を持つが、ノイズがあると、この分布が変わる。<br><br>
 
 <center><img src="images/gradient_histogram.svg"></center>
 <center>data/task_image_denoze/src/create_gradient_histrogram.py で作成した</center>
@@ -428,6 +445,7 @@ denoised = denoise_wavelet(noisy, method='BayesShrink', mode='soft',
 </pre>
 
 <center><img src="images/result_wavelet_shrinkage.svg"></center>
+<center>ノイズが大きとぼやける</center>
 
 </li><br><li>
 <strong>K-SVD</strong><br>
@@ -492,7 +510,7 @@ denoised = reconstruct_from_patches_2d(patches_reconstructed, src.shape)
 </pre>
 
 <center><img src="images/result_ksvd.svg"></center>
-
+<center>ノイズが大きいと、時間が掛かる割には、あまりきれいにならない･･･</center>
 </li></ul>
 
 
@@ -528,7 +546,7 @@ denoised = cv2.fastNlMeansDenoisingColored(noisy,None,h, hColor, templateWindowS
 </pre>
 
 <center><img src="images/result_nlm.svg"></center>
-
+<center>ノイズが大きくても、きれいになる場合がある。パラメータが多く、調整が大変･･･</center>
 </li><br><li>
 <strong>BM3D（Block-matching and 3D filtering)</strong><br>
 <br>
@@ -567,7 +585,7 @@ denoised = bm3d.bm3d(noisy, sigma_psd=sigma_psd)
 </pre>
 
 <center><img src="images/result_bm3d.svg"></center>
-
+<center>パラメータ調整なしでも、そこそこ。非 Deep Learning 系の決定版</center>
 
 </li></ul>
 
