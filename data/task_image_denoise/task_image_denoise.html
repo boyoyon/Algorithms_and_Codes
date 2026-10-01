@@ -173,6 +173,10 @@
 <br>
 Box フィルタは線形分離可能なので、「(1×n の) 水平方向のフィルタ処理」→「(n×1 の) 垂直方向のフィルタ処理」と2回実施することで計算量を減らすことができる (\(n^2\) 回の演算 → \(2n\) 回の演算)
 
+\[
+\frac{s_1+s_2+s_3+s_4+s_5+s_6+s_7+s_8+s_9}{9}=\frac{\frac{s_1+s_2+s_3}{3}+\frac{s_4+s_5+s_6}{3}+\frac{s_7+s_8+s_9}{3}}{3}
+\]
+
 <br><br>
 <strong>お試しコード</strong><br>
 ・data/task_image_denoise/src/denoise_by_box_filter.py<br>
@@ -200,6 +204,21 @@ denoised = cv2.blur(noisy, (SIZE, SIZE))
 <br>
 ガウシアン・フィルタも線形分離可能なので、「(1×n の) 水平方向のフィルタ処理」→「(n×1 の) 垂直方向のフィルタ処理」と2回実施することで計算量を減らすことができる (\(n^2\) 回の演算 → \(2n\) 回の演算)
 
+\[
+\begin{pmatrix}
+1 & 2 & 1 \\
+2 & 4 & 1 \\
+1 & 2 & 1
+\end{pmatrix}
+=\begin{pmatrix}
+1 \\
+2 \\
+1
+\end{pmatrix}
+\begin{pmatrix}
+1 & 2 & 1
+\end{pmatrix}
+\]
 <br><br>
 <strong>お試しコード</strong><br>
 ・data/task_image_denoise/src/denoise_by_gaussian_filter.py<br>
