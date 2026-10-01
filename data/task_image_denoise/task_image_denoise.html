@@ -325,11 +325,10 @@ denoised = cv2.bilateralFilter(noisy, d=SIZE, sigmaColor=75, sigmaSpace=75)
 
 <center><img src="images/feathering.svg"></center>
 <center>背景が単調で輪郭が複雑な画像のマット画像精緻化</center>
-<br>
-<center>data/task_image_denoise/src/guided_filter.py　(入力画像)　(ガイド画像)</center>
 
 <br>
 ① Guided Filterを使って大雑把なマット画像を精緻化する<br>
+　　data/task_image_denoise/src/guided_filter.py　(入力画像)　(ガイド画像)<br>
 
 ② 精緻化したマット画像を使ってマット処理を実行する<br>
 　　data/task_image_denoise/src/blend_with_matte.py　(前景画像)　(マット画像)　(背景画像) [(左上x座標)　(左上y座標)]
