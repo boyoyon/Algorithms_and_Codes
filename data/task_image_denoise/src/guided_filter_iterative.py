@@ -34,7 +34,8 @@ if argc > 3:
 if argc > 4:
     sigma = int(argv[4])
 
-print('Hit any key to terminate this program')
+print('Hit s-key to save and terminate')
+print('Hit any other key to quit')
 
 no = 1
 
@@ -52,6 +53,8 @@ while True:
         break
 
 cv2.destroyAllWindows()
-dst_path = 'guided_filtered_size%d_sigma%d_iterate%d.png' % (size, sigma, no)
-cv2.imwrite(dst_path, guide)
-print('save %s' % dst_path)
+
+if key == ord('s') or key == ord('S'):
+    dst_path = 'guided_filtered_size%d_sigma%d_iterate%d.png' % (size, sigma, no)
+    cv2.imwrite(dst_path, guide)
+    print('save %s' % dst_path)
