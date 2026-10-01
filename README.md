@@ -27,6 +27,12 @@ AI以前の時代には、研究者が手作りの仮説、アルゴリズムを
 そんな仮説、アルゴリズムとお試しコードを集めてみようかと思う。
 </p>
 
+<P>
+これも良いかも<br>
+<a href="https://sbirchfield.github.io/cvintro/">Introduction to Computer Vision</a><br>
+Lecture notes with working Python code 
+</P>
+
 <h2>0～9</h2>
 <h2>A</h2>
 <h2>B</h2>
