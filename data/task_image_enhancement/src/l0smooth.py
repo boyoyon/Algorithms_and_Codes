@@ -6,11 +6,11 @@
 
 from __future__ import division            # forces floating point division 
 import numpy as np                          # Numerical Python 
-import matplotlib.pyplot as plt             # Python plotting
-from PIL import Image                       # Python Imaging Library
+#import matplotlib.pyplot as plt             # Python plotting
+#from PIL import Image                       # Python Imaging Library
 import cv2, os, sys
 # to measure exec time
-from timeit import default_timer as timer   
+#from timeit import default_timer as timer   
 import pyfftw
 
 ## # Constants
@@ -201,7 +201,7 @@ def main():
 
     #count0 = cv2.getTickCount()
 
-    #smoothed2 = ILS_Norm(F,c,lam, interface='parallel_numpy')
+    smoothed2 = ILS_Norm(F,c,lam, interface='parallel_numpy')
 
     #count1 = cv2.getTickCount()
     #print((count1 - count0) / freq)
@@ -210,12 +210,12 @@ def main():
 
     #count0 = cv2.getTickCount()
 
-    smoothed3 = ILS_Norm(F,c,lam,interface='parallel_scipy')
+    #smoothed3 = ILS_Norm(F,c,lam,interface='parallel_scipy')
 
     #count1 = cv2.getTickCount()
     #print((count1 - count0) / freq)
 
-    cv2.imshow('smoothed3', smoothed3)
+    cv2.imshow('smoothed2', smoothed2)
 
     print('Hit s-key to save and terminate')
     print('Hit any other key to quit')

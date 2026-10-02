@@ -63,7 +63,7 @@ def main():
         SCALE = WIDTH / W1
 
     F = read_image(argv[1])
-    src2 = ILS_Norm(F,c,lam,interface='parallel_scipy')
+    src2 = ILS_Norm(F,c,lam, interface='parallel_numpy')
 
     src1 = src1.astype(np.float32) / 255.0
 
@@ -100,9 +100,11 @@ def main():
 
         if fUPDATE:
             dst = AlphaBlend(clone1, clone2, ALPHA)
-            cv2.putText(dst, 'alpha: %.1f' % ALPHA, 
-                font_pos, font, font_size, font_color, 2)
-            cv2.imshow('blend', dst)
+            clone3 = np.clip(dst *255, 0,255).astype(np.uint8)
+            
+            cv2.putText(clone3, 'alpha: %.1f' % ALPHA, 
+                font_pos, font, font_size, font_color, 1)
+            cv2.imshow('blend', clone3)
             fUPDATE = False
 
         key = cv2.waitKeyEx(10)
