@@ -420,8 +420,14 @@ tone_curved  = cv2.LUT(image, tone_curve)
 <center><img src="images/detail_enhancement3.svg"></center>
 
 <p>
-コードは <a href="https://github.com/boyoyon/L0Enhancement">L0Enhancement</a> 参照
-
+ Iterative Least Squares による L0 smoothing 高速化版の python 実装が <a href="https://github.com/safaa-alnabulsi/ILS/tree/main">ここ</a> にあったので、使わせてもらった。<br>
+(data/task_image_enhancement/src/l0enhance.py)<br>
+(準備)　pip install opencv-python pyfftw<br>
+(引数)　画像ファイルへのパス<br>
+(使い方)<br>
+　矢印キーでαブレンディングのα値を上げ下げする。<br>
+　sキー押下でセーブ～終了<br>
+　そのほかのキー押下でセーブせずに終了
 </p>
 
 <h4 style="padding-left:1em">Exposure Fusion</h4>
