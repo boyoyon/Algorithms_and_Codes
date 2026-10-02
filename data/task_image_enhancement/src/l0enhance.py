@@ -108,13 +108,13 @@ def main():
         key = cv2.waitKeyEx(10)
     
         if key == LEFT:
-            ALPHA += 0.1
+            ALPHA -= 0.1
         
         elif key == UP:
             ALPHA += 0.3
 
         elif key == RIGHT:
-            ALPHA -= 0.1
+            ALPHA += 0.1
 
         elif key == DOWN:
             ALPHA -= 0.3
