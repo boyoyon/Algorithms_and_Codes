@@ -340,8 +340,41 @@ dst = cv2.merge((dst_b, dst_g, dst_r))
 <h4 style="padding-left:1em">トーンカーブ補正</h4>
 <p>
 ガンマ補正、線形変換、対数変換など、これまで個別の数式で処理していたすべての階調変換を、「1つの自由な曲線（ベジェ曲線など）で直感的に操作できるように統合したインターフェース」として、Adobe Photoshopなどの画像編集ソフトに搭載されました。
-
 </p>
+
+<p>
+OpenCVでトーンカーブ補正を行うには、
+</p>
+
+<pre>
+<code style="padding-left:3em;">
+tone_curved  = cv2.LUT(image, tone_curve) 
+</code>
+</pre>
+
+<p>
+とするだけでよいが、曲線を指定するGUIが面倒なので、式で入力してみた。
+<br><br>
+(data/task_image_enhancement/src/tone_curve.py)<br>
+・第一引数：　画像ファイルへのパス<br>
+・第二引数：　トーンカーブの式。I の式で指定する。-1≦I≦1 <br>
+(RGBに別々のカーブを指定する場合は)<br>
+・第二引数：　Blue 用トーンカーブの式<br>
+・第三引数：　Green 用トーンカーブの式<br>
+・第四引数：　Red 用トーンカーブの式<br>
+※　式に np.abs など numpy の関数を使用できる。<br>
+　　式にスペースを含めることはできない。<br>
+<br>
+(例) tone_curve.py　lena.jpg　((I+1)/2)**0.9　((I+1)/2)**0.9　((I+1)/2)**2.2<br>
+</p>
+
+<center><img src="images/tone_curve1.png"></center>
+
+<p>
+(例：solarisation) tone_curve.py　lena.jpg　1-np.abs(I)<br>
+</p>
+
+<center><img src="images/tone_curve2.png"></center>
 
 <h4 style="padding-left:1em">HDR: High Dynamic Rang</h4>
 
