@@ -59,6 +59,7 @@ Lecture notes with working Python code
 <h2>K</h2>
 <h2>L</h2>
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_line_detection/task_line_detection.html">(タスク) Line Detection</a></br>
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_low_light_enhancement/task_low_light_enhancement.html">(タスク) Low Light Enhancement (低照度画像強調)</a></br>
 <h2>M</h2>
 
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/mds/mds.html">MDS: Multi Dimensional Scaling (多次元尺度構成法)</a><br>
