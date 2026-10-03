@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>LLE</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(タスク) LLE:　Low Light Enhancement<br> 低照度画像強調</center></h1>
+<h3>何ものか？</h3>
+<p>
+暗所や逆光などの光量が不足した環境で撮影された「暗く、ノイズが多く、色が不鮮明な画像・映像」を、人間やAIが認識しやすい「明るく、クリアで、自然な画像・映像」に変換・復元するタスク。
+</p>
+
+<center><img src="images/lle.svg"></center>
+
+<p>
+明るくすればいいだけじゃないの？という事で、思い付きの単純な手法でやってみると<br>
+・明るくならない<br>
+・無理やり明るくするとノイズが増幅される、色が不自然になる<br>
+という難しさがある。
+</p>
+
+<center><img src="images/image1.svg"></center>
+
+<p>
+※ 輝度反転～dehaze～輝度反転<br>
+　　『NIGHT VIDEO ENHANCEMENT USING IMPROVED DARK CHANNEL PRIOR 』 (2013)<br>
+　　低照度画像は輝度を反転するとモヤの掛かった画像のように見えるという思い付き手法。<br>
+　　dehaze の入力画像を 255 - 入力画像、dehaze 結果を 255 - dehaze結果、としているだけ。<br>
+　　予想外に効果があった。
+</p>
+
+<p>
+(お試しコード)<br>
+・HE (補正量 100%)<br>
+　　data/task_image_enhancement/src/he_by_opencv.py<br>
+・HE (補正量 50%)<br>
+　　data/task_image_enhancement/src/simple_white_balance_by_he.py<br>
+　　トラックバー100で補正量50%、150で100%、50で0%、0で-50%<br>
+・CLAHE<br>
+　　data/task_image_enhancement/src/clahe_by_opencv.py<br>
+・輝度反転～dehaze～輝度反転<br>
+　　data/dark_channel_prior/src/inv-dehaze-inv.py<br>
+・Retinex(SSR,MSR)<br>
+　　data/task_low_light_enhancement/src/lle_by_retinex.py<br>
+・LIME<br>
+　　https://github.com/Henry-GongZY/Low-light-Image-Enhancement<br>
+　　Code → Download ZIP<br>
+　　Low-light-Image-Enhancement-master.zip を解凍する<br>
+　　LIME.py があるフォルダに <br>
+　　　data/task_low_light_enhancement/src/lle_by_LIME.py をコピー<br>
+<br>
+　　pip install scipy<br>
+　　pip install opencv-python<br>
+　　pip install scikit-image<br>
+　　pip install tqdm<br>
+<br>
+　　python　lle_by_LIME.py　(画像ファイル)　[(iteration) (alpha) (rho) (gamma)]
+</p>
+
+<h3>LLEの源流： Retinex 理論</h3>
+
+　※ Retinex:　Retina and Cortex system (網膜・大脳皮質系)
+
+<p>
+Edwin H. Land（「ポラロイド」社の創業者）が提唱した理論。<br>
+人間が「物体の色や明るさを周囲の環境（照明光）に惑わされずに認識できる仕組み」を数理モデル化したもの。<br>
+<br>
+照明に惑わされずに物体の本来の色や明るさを取得できる ⇒ 低照度画像の補正に活用できる
+</p>
+
+<p style="padding-left:1em;">
+『<strong>The Retinex</strong>』　(1964)<br>
+</p>
+
+<p>
+Retinexという概念・言葉を世界で最初に世に送り出した論文。<br>
+「網膜（Retina）と大脳皮質（Cortex）が連携して色を決定している」という仮説を初めて提唱し、色の恒常性を説明しようとした初期段階のもの。
+</p>
+
+<p style="padding-left:1em;">
+『<strong>Lightness and Retinex Theory</strong>』　(1971)
+</p>
+
+<p>
+ 画像を「Illumination（照明光成分）」と「Reflectance（物体本来の反射率成分）」の積として分解する考え方を数式モデルとして定式化した。<br>
+<br>
+※ 後で MSR： Multi Scale Retinex が登場するので、元のRetinex を SSR： Single Scale Retinex と記す。
+\[
+\begin{array}{l}
+R_{SSR}(x,y)=\log I(x,y)-\log[F(x,y)*I(x,y)]\\
+\\
+・R_{SSR}(x,y)\text{：物体本来の反射率 ・・・ 照明に依存しない}\\
+・ I(x,y)\text{：入力画像}\\
+・ *\text{：畳み込み演算}\\
+・ F(x,y)\text{：中心周囲関数(一般には単一のガウシアンフィルタ)}\\
+　F(x,y)=K・\exp\Big(-\frac{x^2+y^2}{σ^2}\Big)　\\
+　K \text{ は } \int\int F(x,y)\;dx\;dy=1\text{ を満たすための正規化定数}\\
+　σ \text{ はスケールパラメータ}
+\end{array}
+\]
+</p>
+
+<p style="padding-left:1em;">
+『<strong>The Retinex Theory of Color Vision</strong>』 (1977)
+</p>
+
+<p>
+提唱から10年以上が経ち、理論と実験が完成された段階で発表されたRetinex理論の「集大成」。
+</p>
+
+<h3>NASA による Retinex 理論の実用化</h3>
+
+<p>
+NASAは宇宙探査や航空安全の過程で、「極端な明暗差」や「超低照度」の画像問題を解決する必要があった。
+<div class="styleBullet">
+<ul><li>
+・霧、もや、夜間などの悪条件において、コックピットや監視カメラの映像から滑走路や障害物をリアルタイムに視認できるようにする必要があった。
+</li><br><li>
+・宇宙は太陽光が当たる場所が極端に明るく、影（シャドウ）の部分は完全な暗闇になります。従来のカメラではどちらかが白飛びするか黒潰れしてしまい、宇宙飛行士の作業や船体の状況を正確に捉えられなかった。
+</li></ul></div>
+</p>
+
+<p>
+1990年代、NASAラングレー研究所（Langley Research Center）のシニア研究員であった ダニエル・J・ジョブソン（Daniel J. Jobson）氏 らのチームが、ランドの抽象的な視覚理論をベースに、コンピューターで処理できる具体的な数理モデルの開発に着手した。
+</p>
+
+<p style="padding-left:1em;">
+『<strong>Properties of a center/surround retinex</strong>』 (1995)<br>
+『<strong>A Multiscale Retinex for Color Image Enhancement</strong>』  (1997)
+</p>
+
+<p>
+Landの理論をデジタル画像処理アルゴリズム「MSR (Multiscale Retinex)」として実用化。暗い画像から照明成分を推定して除去し、ディテールを浮き上がらせる現代的LLEの直接の先祖となった。
+</p>
+
+<p>
+これらによって、画像をシャープに明るくしつつ色も復元する「MSR (Multiscale Retinex)」や「MSRCR」という計算アルゴリズムが誕生した。この技術は「NASA Spinoff（宇宙技術の民間転移）」として民間に広くライセンスされ、現在のデジタルカメラやスマートフォンのHDR機能、そして低照度画像強調（LLE）の技術基盤へと繋がっている。
+</p>
+
+<p>
+異なる \(σ_n\) を持つ複数の SSL を重み付け線形結合したもの。
+
+\[
+\begin{array}{l}
+R_{MSR}(x,y)=\sum\limits_{n=1}^N w_n・\big\{\log I(x,y)-\log \big[ F_n(x,y)*I(x,y)\big]\big\} \\
+\\
+・ N\text{：スケール(ガウシアンフィルタ)の総数。 } N=3 \text{ が一般的}\\
+・F_n(x,y)\text{：固有の標準偏差 }σ_n\text{ を持つ }n\text{ 番目の中心周囲関数}\\
+・w_n\text{：各スケールの影響度を調整する重み}\\
+　\text{重みの合計は 1 になるように設定される　} \sum\limits_{n=1}^N w_n=1
+\end{array}
+\]
+
+
+</p>
+
+<h3>Deep Learning 以前の LLE 決定版： LIME</h3>
+
+<p style="padding-left:1em;">
+『<a href="https://arxiv.org/html/1605.05034v3"><strong>LIME: Low-Light Image Enhancement via Illumination Map Estimation</strong></a>』 (2016)
+</p>
+
+<p>
+Retinex 理論に基づき、ピクセルごとの「照明マップ」を高速かつ極めてシャープに推定する数理最適化手法を提案。ノイズを抑えつつ自然に明るくするアルゴリズムとして、当時の最高峰となり、現在でも軽量な実装が必要なデバイスの基準手法となっている。
+</p>
+
+<center><img src="images/LIME.svg"></center>
+
+<h3>Deep Learning 以降</h3>
+<p style="padding-left:1em;">
+『<strong>Learning to See in the Dark</strong>』 (2018)
+</p>
+
+<p>
+「SID dataset」という、極限の暗闇で撮影したRAW画像と、長時間露光した綺麗な画像の「ペアデータ」を公開。これを用いてU-NetベースのAIを訓練することで、従来の画像処理の限界を遥かに超え、星明かり程度の暗闇からノイズのない鮮明なカラー画像を復元できることを証明しました。
+</p>
+
+<center><img src="images/leaning_to_see_in_the_dark.svg"></center>
+
+<p style="padding-left:1em;">
+『<strong>Deep Retinex Decomposition for Low-Light Image Enhancement</strong>』 (2018)
+</p>
+
+<p>
+古典的なRetinex理論の「画像分解」のステップ自体をディープラーニング（CNN）に行わせる革新的なネットワークを提案。あわせて公開された「LOL dataset」は、今なおLLE研究のベンチマーク（標準評価データ）として世界中で使われています。
+</p>
+
+<h3>破壊的イノベーション：教師なし・生成AI（2020年代〜）</h3>
+
+<p style="padding-left:1em;">
+『<strong>Zero-Reference Deep Curve Estimation for Low-Light Image Enhancement</strong>』 (2020)
+</p>
+
+<p>
+綺麗な教師画像を一切必要とせず、暗い画像を入力するだけで「最適な光度調整カーブ」をAIが自己学習する画期的なアプローチ。軽量かつ超高速なため、スマートフォンや防犯カメラなどのリアルタイム処理を大きく前進させました。
+</p>
+
+    </body>
+</html>
