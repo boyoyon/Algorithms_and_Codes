@@ -228,7 +228,7 @@ def main():
         filename = os.path.splitext(base)[0]
         dst_path = '%s_l0smoothed.png' %    filename
 
-        dst = np.clip(smoothed3 * 255,0,255).astype(np.uint8)
+        dst = np.clip(smoothed2 * 255,0,255).astype(np.uint8)
         cv2.imwrite(dst_path, dst)
         print('save %s' % dst_path)
 
