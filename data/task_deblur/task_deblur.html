@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>Deblur</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(タスク) Deblur (ぶれ除去)　作成中</center></h1>
+<h3>何ものか？</h3>
+<p>
+カメラの手ブレや被写体の動き、あるいはピントのズレによってぼやけてしまった画像・動画から、ブレ（歪み）を取り除いて鮮明な画像を復元するコンピュータービジョン（画像処理）のタスク
+</p>
+
+<h3>問題の定式化</h3>
+
+<p>
+真っ白な背景に、黒い点の被写体×1個のみからなるシーンを撮影する状況を考える。<br>
+カメラの手ブレや被写体の動き、ピントのズレがあると、撮影した画像はこんな感じになる。
+</p>
+
+<center><img src="images/blur1.svg"></center>
+
+<p>
+※ 実際には　"これらの組み合わせ＋ノイズ" が撮影される。
+</p>
+
+<p>
+撮像システムが線形シフト不変であると仮定すると、上の画像はインパルス応答<br>
+(画像の場合は PSF: Point Spread Function 点拡がり関数と呼ばれる) であり<br>
+ブレ画像の生成過程は以下のように定式化される。
+</p>
+<center><img src="images/blur2.svg"></center>
+
+<p>
+Deblur はこれの逆問題を解くタスクであり、non-blind と blind の二種類がある。
+</p>
+
+<center><img src="images/blur3.svg"></center>
+
+<p style="padding-left:4em;">
+※　Deblur ・・・ ブレやボケを除去するというタスク<br>
+　　Deconvolution ・・・ Deblurを実現するための数学的手法
+</p>
+
+<br>
+
+<p>
+Blind Deconvolution は解が一意には決まらないので、拘束条件(正則化、事前知識など)が必要。<br>
+(課題があっても、「元々そういう被写体だったんじゃないですか？」と一応言ってみる、やる気のない人はどこにでもいそう･･･)<br>
+(見たことのない被写体でも、一発でブレていると判る、人の認知とは一体･･･)
+</p>
+
+<center><img src="images/blur4.svg"></center>
+
+<p>
+Blind Deconvolution で使われる事前知識の例<br>
+・Dark Channle Prior<br>
+　　ブレる → 異なるピクセル値が平均される → 灰色に近づく → 黒レベルが浮く<br>
+・画像勾配<br>
+　　ブレる → 異なるピクセル値が平均される → 画像勾配が減る
+</p>
+
+<center><img src="images/blur5.svg"></center>
+<br>
+<center>ブレていない画像を持っておらず deblur 後の画像を使っているので勾配ヒストグラムがちょっと変･･･</center>
+<center>(勾配ヒストグラムで捏造を見抜けるのか･･･)</center>
+
+<h3>手法</h3>
+
+<p>
+各種手法、論文、プロジェクトページ、コード(github)へのリンクは <a href="https://github.com/subeeshvasu/Awesome-Deblurring">https://github.com/subeeshvasu/Awesome-Deblurring</a> にまとめられている (解説はないけど･･･)。
+</p>
+
+　(以下は AIモードの受け売り)<br>
+　(手法に確定した愛称がないものは、論文タイトルの一部からテキトーにキーワードをとった)
+
+<h4 style="padding-left:1em;">Non-Blind Deblur</h4>
+
+<center><img src="images/non_blind.svg"></center>
+<p><strong>Wiener Filter</strong></p>
+<p style="padding-left:4em;">
+『Extrapolation, Interpolation, and Smoothing of Stationary Time Series』　(1942 機密レポート, 1949 一般公開)
+<br><br>
+ノーバート・ウィーナー（Norbert Wiener）によって1940年代に考案された。第二次世界大戦中の1942年に軍の機密レポートとしてまとめられた後、1949年に 『The Extrapolation, Interpolation, and Smoothing of Stationary Time Series』という書籍(通常イエロー・ブック)として一般向けに正式出版された。
+<br><br>
+もともと 1 次元の時系列信号（レーダー信号など）のノイズ除去や予測を目的としたものだったが、信号の劣化モデル（ブレに相当する線形システム）と加法性ノイズが存在する中で「元の信号と復元信号の平均二乗誤差（MSE）を最小化する」という数学的枠組みを提示した。
+<br><br>
+この理論が、後に1960年代〜70年代にかけてデジタル画像処理の黎明期（Helstromらによる研究など）に2次元（画像空間・周波数空間）へと拡張され、ブレカーネル（点拡がり関数: PSF）が既知である前提の古典的なnon-blind deblurring手法の元祖として広く使われるようになった。
+
+\[
+\begin{align}
+& \hat{X}(u,v)=\Bigg[\frac{H^*(u,v)}{|H(u,v)|^2+K}\Bigg]Y(u,v) \\
+
+& \hat{X}(u,v):\text{ ブレが除去された画像をFFTしたもの(推定値)}\\
+& Y(u,v):\text{ ブレてノイズが載った観測画像をFFTしたもの}\\
+& H(u,v): \text{ PSFをFFTしたもの。OTF：Optical Transfer Function (光学伝達関数)}\\
+& H^*(u,v): H(u,v)\text{ の複素表役}\\
+& K: \text{ノイズ対信号のパワー比を表わす正の定数}
+\end{align}
+\]
+</p>
+
+<center><img src="images/wiener_filter.svg"></center>
+<br>
+<center>\(\displaystyle\hat{X}(u,v)=\frac{Y(u,v)}{H(u,v)+\varepsilon}\)</center>
+<br>
+<center>FFTすると複素数になるので、\(\displaystyle \frac{1}{H(u,v)}=\frac{1}{H(u,v)}\cdot\frac{H^*(u,v)}{H^*(u,v)}=\frac{H^*(u,v)}{|H(u,v)|^2}\) となる</center>
+
+<p><strong>Richardson-Lucy (RL) Algorithm</strong></p>
+<p style="padding-left:4em;">
+『Bayesian-Based Iterative Method of Image Restoration』 (1972)<br>
+光学・画像処理の観点から、<strong><span style="color:magenta;">ベイズの定理を基礎として</span></strong>画像の復元アルゴリズムを導出した。
+<br><br>
+『An Iterative Technique for the Rectification of Observed Distributions』 (1974)<br>
+天文学の観点から、観測されたデータ分布（星の画像など）からブレの影響を正して真の分布を推定（整流化）する手法として導出した。
+<br><br>
+非負制約（復元した画素値がマイナスにならない）を自然に満たせるため、天体画像やバイオ顕微鏡画像のように「背景が真っ暗（ゼロ）で星や細胞が光っている」といった画像のデコンボリューションに現在でも非常に強力なデファクトスタンダードとして使われている。
+<br><br>
+(概要)<br>
+① 初期推定画像 \(x^{0}\) はブレ画像 \(y\) とする<br>
+② 推定画像 \(x^{t}\) とブレ・カーネル \(h\) で畳み込みを実施：\(x^{t}*h\)<br>
+③ ブレ画像を畳み込み結果で割る \(\displaystyle\frac{y}{x^{t}*h}\)<br>
+　推定画像が正解なら、割り算の結果は 1 (または 1 に近い値)になり終了。<br>
+④ 割り算が 1 (または 1 に近い値) にならない場合は以下の式で推定を更新し、②～④を繰り返す。
+\[
+x^{t+1}=x^{t}\cdot\Big(h^* * \Big[\frac{y}{x^{t}*h}\Big]\Big)
+\]
+　\(h^*\)：　\(h\) 行列を180°回転した行列 (転置行列)
+</p>
+
+<p><strong>Hyper-Laplacian Prior</strong></p>
+<p style="padding-left:4em;">
+『Fast Image Deconvolution using Hyper-Laplacian Priors』 (NIPS 2009)<br>
+<strong><span style="color:magenta;">自然画像の勾配分布により適合する「ハイパー・ラプラシアン（\(L_{p}\) ノルム、 p < 1）」を導入。</span></strong>本来極めて困難な非凸最適化問題を、Lookup Table（LUT）を用いた効率的な割当て手法（Half-Quadratic Splitting法など）で高速かつ鮮明に解くブレイクスルーを起こした。
+
+<p><strong>Shrinkage Fields</strong></p>
+<p style="padding-left:4em;">
+『Shrinkage Fields for Effective Image Restoration』 (CVPR 2014)<br>
+
+ 従来の反復最適化アルゴリズムの手続きを「ステップ展開（Unrolling）」し、各ステップのランダムフィールドと収縮関数をデータから直接学習（End-to-End）させたモデル。<strong><span style="color:magenta;">計算速度を秒単位からミリ秒単位へと高速化させた。</span></strong>
+</p>
+
+<p><strong>機械学習アプローチ</strong></p>
+<p style="padding-left:4em;">
+『A Machine Learning Approach for Non-blind Image Deconvolution"』 (CVPR 2013)<br>
+
+<strong><span style="color:magenta;">Non-blind復元に初めてニューラルネットワーク（MLP/CNN）を本格導入した。</span></strong>Fourier領域での粗い逆畳み込み（Wiener的な処理）の後に発生する特有のカラーノイズやアーティファクトを、ニューラルネットに学習させて除去する2段階アプローチを確立した。
+</p>
+
+<p><strong>Deep CNN Denoiser Prior</strong></p>
+<p style="padding-left:4em;">
+『Learning Deep CNN Denoiser Prior for Image Restoration" .』(CVPR 2017)<br>
+『Deep Wiener Deconvolution Network for Non-Blind Image Deblurring" 』(IEEE T-PAMI / CVPR 2020).<br>
+Wiener フィルターなどの古典的なブレ復元（データ忠実項）の最適化ループの中に、強力な<strong><span style="color:magenta;">「CNNデノイザー（画像Prior）」を組み込む手法。</span></strong>数学的な厳密さと、ディープラーニングの強力な表現力を両立させ、現代の標準的なフレームワークとなった。
+</p>
+
+<h4 style="padding-left:1em;">Blind Deblur</h4>
+
+<center><img src="images/blind.svg"></center>
+
+<p><strong>Removing Camera Shake</strong></p>
+<p style="padding-left:4em;">
+『Removing camera shake from a single photograph』(SIGGRAPH 2006).<br>
+現代的なシングル画像ブラインド・デブラリングの事実上の出発点。<strong><span style="color:magenta;">自然画像の勾配（エッジ）が重い裾を持つ分布（Heavy-tailed distribution）に従う特性を利用</span></strong>し、アンシャープな画像からブレカーネルの形状を確率的に推定することに初めて成功した。
+</p>
+
+<p><strong>High-quality motion deblurring</strong></p>
+<p style="padding-left:4em;">
+『High-quality motion deblurring from a single image』(SIGGRAPH2008)
+<br>
+確率モデルを陽に解くのではなく、目的関数（エネルギー関数）を定義して直接最適化する現代的な数理モデルの基礎を作った。<br>
+画像の平滑な領域（ノイズが乗りやすい）とエッジ領域を個別に捉える洗練された確率モデル（Piecewise Function）を導入。リンギング（復元時におこる波紋のようなノイズ）を強力に抑制し、視覚的に非常にクリーンな復元画像を提示して世界を驚かせた。
+</p>
+
+<p><strong>Understanding and evaluating</strong></p>
+<p style="padding-left:4em;">
+『Understanding and evaluating blind deblurring algorithms』(CVPR 2009 / IEEE T-PAMI 2011)<br>
+
+最も直感的な<strong><span style="color:magenta;">MAP推定（\(\mathrm{MAP}_{x,k}\)：画像 \(x\) とカーネル \(k\) を同時に最大化する手法）を行うと、数学的には「全くブレ除去されていない元画像」という無意味な解（Delta関数カーネル）の方が確率が高くなってしまうことを証明した。</span></strong>
+
+<br><br>
+
+これにより、単純な同時最適化は破綻することが判明。研究者たちは「まず画像 \(x\) の候補を絞り込んで、<strong><span style="color:magenta;">カーネル \(k\) だけを先に正確に求める」アプローチ（\(\mathrm{MAP}_{k}\)）へと舵を切ることになった。</span></strong>
+</p>
+
+<p><strong>Shock Filter and Gradient Prior</strong></p>
+<p style="padding-left:4em;">
+『Fast motion deblurring using shock filters and gradient priors』 (SIGGRAPH Asia 2009)<br>
+<strong><span style="color:magenta;">それまで数時間〜数日かかっていた計算を数秒〜数分へと高速化</span></strong>し、実用化の扉を開けた。
+<br><br>
+職人技的な「エッジ予測ステップ」を導入。画像処理フィルタ<strong><span style="color:magenta;">（Shock Filter）をかけて無理やりエッジを尖らせ、そこからカーネルを推定</span></strong>して、マルチスケール（粗い解像度から細かい解像度へ）で高速にアップデートしていく手法を確立した。以降の最適化手法の「基本骨格」となった論文。
+</p>
+
+<p><strong>Two-phase kernel estimation</strong></p>
+<p style="padding-left:4em;">
+『Two-phase kernel estimation for robust motion deblurring』  (ECCV 2010)<br>
+「ボケ画像の中のどのエッジがカーネル推定に有効で、どのエッジが有害か」を明確に言語化した論文。
+<br><br>
+<strong><span style="color:magenta;">カーネルのサイズよりも細いテクスチャ（髪の毛や衣服の模様など）は、ブレ推定を狂わせる「ノイズ」になることを指摘。特定の太さ以上の主要なエッジ（Salient Edges）だけを厳密にマージン付きで選択する数理モデルを提案</span></strong>し、カーネル推定の頑健性を極限まで高めた。
+</p>
+
+<p><strong>Normalized Sparsity Measure</strong></p>
+<p style="padding-left:4em;">
+『Blind deconvolution using a normalized sparsity measure』 (CVPR 2011)<br>
+Levinらの指摘した「ボケ画像のまま（Delta関数）に収束する問題」を、新しい数式（ノルム）の発明によってスマートに解決した傑作。
+<br><br>
+従来の L₁ ノルムを L₂ ノルムで割った「正規化スパース性尺度（\(\frac{\|{}\nabla I\|{}_{1}}{\|{}\nabla I\|{}_{2}}\)）」を提案。この数式は、画像がボケると明確に値が大きくなり、鮮明になると小さくなる特性を持つため、<strong><span style="color:magenta;">最適化ループが「ボケ画像（Delta解）」へ逃げるのを数学的に完全にブロックできる</span></strong>ようになった。
+</p>
+
+
+<p><strong>Dark Channel</strong></p>
+<p style="padding-left:4em;">
+『Blind Image Deblurring Using Dark Channel Prior" 』(CVPR 2016)<br>
+
+元々は dehaze (モヤ除去) に使われていた「画像局所のRGBの最小値はほぼ0（黒）になる」という性質が、<strong><span style="color:magenta;">ブレることで周囲ピクセルと平均化され、0 でなくなってしまうことに着目。この「ダークチャネルのスパース性」を正則化に組み込み</span></strong>、夜景、テキスト、顔写真など広範な画像で圧倒的なブレ推定精度を誇った最適化時代の集大成。
+<br><br>
+非Deep Learningの時代は、「画像の勾配（エッジ）をどうコントロールするか」の戦いだった。
+<br><br>
+2010年代後半からディープラーニング（CNN/GAN）が台頭すると、これらの複雑な数式（\(L_{p}\) ノルムやダークチャネルなど）を組む必要はなくなった (DNN が非明示的に関数近似するので)。しかし、現代のAI deblurでも「ネットワークにエッジ強調（Shock Filter的）な中間出力をさせる」構造や、「LevinのMAP理論を回避するために、まずカーネル空間的な特徴を別ブランチで学習させる（PnP手法など）」といった形で、この時代に培われたパラダイムがそのままアーキテクチャ設計の血肉となっている。
+</p>
+
+<p><strong>Learning CNN</strong></p>
+<p style="padding-left:4em;">
+『Learning a Convolutional Neural Network for Non-uniform Motion Blur Removal"』 (CVPR 2015).<br>
+
+画像の局所パッチから「不均一な（場所ごとに異なる）<strong><span style="color:magenta;">ブレカーネル」のエッジパターンを分類・推定するために初めてCNNを活用</span></strong>。Deep Learning が Blind Deblurring を実用に導く架け橋となった。
+</p>
+
+
+<p><strong>Deep Multi-scale CNN</strong></p>
+<p style="padding-left:4em;">
+『Deep Multi-scale Convolutional Neural Network for Dynamic Scene Deblurring" 』(CVPR 2017)<br>
+
+<strong><span style="color:magenta;">カーネル推定をバイパスし、End-to-Endでブレ画像を直接復元した最初期の論文。</span></strong>画像の解像度を粗いスケールから段階的に綺麗にしていく「マルチスケール設計」を提案し、今日でもベンチマークとして使われる「GoPro Dataset」を構築した功績も含め、絶対的なマイルストーン。
+</p>
+
+<p><strong>Deblur GAN</strong></p>
+<p style="padding-left:4em;">
+『DeblurGAN: Blind Motion Deblurring Using Conditional Adversarial Networks" 』(CVPR 2018)<br>
+ GAN（敵対的生成ネットワーク）を Blind Deblurring に導入。従来のCNN で発生しがちだった「平均化されて全体がのっぺり・ぼやける（PSNRは高いが質感がない）」という課題に対し、<strong><span style="color:magenta;">テクスチャや微細なエッジのリアルな生成を可能にし、知覚的クオリティ（Perceptual Quality）を劇的に向上させた。</span></strong>
+</p>
+
+<p><strong>Progressive Image Restortion</strong></p>
+<p style="padding-left:4em;">
+『Multi-Stage Progressive Image Restoration" 』(CVPR 2021)<br>
+
+ブレ、デノイズ、雨粒除去など複数の復元タスクで当時のSOTA（最高精度）を総なめにしたモデル。複数のステージを並列・段階的に繋ぎ、エンコーダ・デコーダ間の情報欠損を防ぐアーキテクチャで、CNNベースのエンドツーエンド手法のひとつの完成形となった。
+</p>
+
+<p><strong>Restormer</strong></p>
+<p style="padding-left:4em;">
+『Restormer: Efficient Transformer for High-Resolution Image Restoration" .』(CVPR 2022)<br>
+
+計算コストの重いTransformerを画像復元向けに超効率化（TransformerのAttentionを空間方向ではなくチャネル方向に適用）したマイルストーン。圧倒的なクオリティで一時期の画像復元ベンチマークを席巻し、現在のベースラインとなっている。
+</p>
+    </body>
+</html>
