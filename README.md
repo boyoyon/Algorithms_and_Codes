@@ -48,6 +48,7 @@ Lecture notes with working Python code
 
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/dark_channel_prior/dark_channel_prior.html">Dark Channel Prior</a><br>
 
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_deblur/task_deblur.html">(タスク) Deblur (ぶれ除去) ･･･ 作成中</a><br>
 <h2>E</h2>
 <h2>F</h2>
 <h2>G</h2>
