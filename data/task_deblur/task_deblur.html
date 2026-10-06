@@ -155,7 +155,11 @@ Blind Deconvolution で使われる事前知識の例<br>
 <br>
 <center>\(\displaystyle\hat{X}(u,v)=\frac{Y(u,v)}{H(u,v)+\varepsilon}\)</center>
 <br>
-<center>FFTすると複素数になるので、\(\displaystyle \frac{1}{H(u,v)}=\frac{1}{H(u,v)}\cdot\frac{H^*(u,v)}{H^*(u,v)}=\frac{H^*(u,v)}{|H(u,v)|^2}\) となる</center>
+<center>FFTすると複素数になるので</center>
+<br>
+<center>\(\displaystyle \frac{1}{H(u,v)}=\frac{1}{H(u,v)}×\underbrace{\frac{H^*(u,v)}{H^*(u,v)}}_{=1}=\frac{H^*(u,v)}{|H(u,v)|^2}\) </center>
+<br>
+<center>として分母を実数化している</center>
 
 <p><strong>Richardson-Lucy (RL) Algorithm</strong></p>
 <p style="padding-left:4em;">
@@ -212,7 +216,14 @@ Wiener フィルターなどの古典的なブレ復元（データ忠実項）�
 <p><strong>Removing Camera Shake</strong></p>
 <p style="padding-left:4em;">
 『Removing camera shake from a single photograph』(SIGGRAPH 2006).<br>
-現代的なシングル画像ブラインド・デブラリングの事実上の出発点。<strong><span style="color:magenta;">自然画像の勾配（エッジ）が重い裾を持つ分布（Heavy-tailed distribution）に従う特性を利用</span></strong>し、アンシャープな画像からブレカーネルの形状を確率的に推定することに初めて成功した。
+現代的なシングル画像ブラインド・デブラリングの事実上の出発点(*)。<strong><span style="color:magenta;">自然画像の勾配（エッジ）が重い裾を持つ分布（Heavy-tailed distribution）に従う特性を利用</span></strong>し、アンシャープな画像からブレカーネルの形状を確率的に推定することに初めて成功した。
+<br><br>
+* それ以前にも Blind Deconvolution の研究はもちろんあった。<br>
+　『Blind deconvolution through digital signal processing』 (1975)<br>
+　　Blind Deconvolution という言葉を初めて使い、その問題設定を明確に定義した最初の論文<br><br>
+　『Automatic multidimensional deconvolution』 (1987)<br>
+　　2D 画像なら追加の情報なしでカーネルを分離できるという Zero-Sheet法 (Bates： 夭折した天才、だそうだが･･･)<br>
+　　ノイズに弱くてあまり流行らず･･･
 </p>
 
 <p><strong>High-quality motion deblurring</strong></p>
