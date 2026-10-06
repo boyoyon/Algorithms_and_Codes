@@ -160,6 +160,16 @@ Blind Deconvolution で使われる事前知識の例<br>
 <center>\(\displaystyle \frac{1}{H(u,v)}=\frac{1}{H(u,v)}×\underbrace{\frac{H^*(u,v)}{H^*(u,v)}}_{=1}=\frac{H^*(u,v)}{|H(u,v)|^2}\) </center>
 <br>
 <center>として分母を実数化している</center>
+<br>
+
+<p style="padding-left:4em;">
+<strong>お試しコード</strong><br>
+(data/task_deblur/src/deblur_by_wiener_filter.py)<br>
+・ 第一引数： ブレ画像<br>
+・ 第二引数： ブレ・カーネル画像 (黒地に白の軌跡)
+</p>
+
+<center><img src="images/deblur_by_wiener_filter.svg"></center>
 
 <p><strong>Richardson-Lucy (RL) Algorithm</strong></p>
 <p style="padding-left:4em;">
@@ -181,6 +191,14 @@ Blind Deconvolution で使われる事前知識の例<br>
 x^{t+1}=x^{t}\cdot\Big(h^* * \Big[\frac{y}{x^{t}*h}\Big]\Big)
 \]
 　\(h^*\)：　\(h\) 行列を180°回転した行列 (転置行列)
+</p>
+
+<p style="padding-left:4em;">
+<strong>お試しコード</strong><br>
+(data/task_deblur/src/deblur_by_RL.py)<br>
+・ 第一引数： ブレ画像<br>
+・ 第二引数： ブレ・カーネル画像 (黒地に白の軌跡)<br>
+・ 第三引数： オプションで反復回数を指定する (デフォルトは30回) ･･･ ちょっと時間が掛かる
 </p>
 
 <p><strong>Hyper-Laplacian Prior</strong></p>
