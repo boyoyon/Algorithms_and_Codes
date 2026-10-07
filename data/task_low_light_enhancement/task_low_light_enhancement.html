@@ -207,9 +207,15 @@ R_{MSR}(x,y)=\sum\limits_{n=1}^N w_n・\big\{\log I(x,y)-\log \big[ F_n(x,y)*I(x
 　\text{重みの合計は 1 になるように設定される　} \sum\limits_{n=1}^N w_n=1
 \end{array}
 \]
-
-
 </p>
+
+<p>
+(蛇足)<br>
+Image Enhancementはコントラストを強調し、影の部分に暗い部分を残すが、Retinexは影の部分の視認性を改善する 。<br>
+(不自然さはあるが･･･)
+</p>
+
+<center><img src="images/he_vs_retinex.svg"></center>
 
 <h3>Deep Learning 以前の LLE 決定版： LIME</h3>
 
@@ -223,6 +229,13 @@ Retinex 理論に基づき、ピクセルごとの「照明マップ」を高速
 
 <center><img src="images/LIME.svg"></center>
 
+<p>
+(蛇足)<br>
+　Retinex の主旨からはちょっと逸れるが、被写体の本来の色ではなく、被写体を邪魔しているものの色を抽出して、色かぶりを除去することにも使える。
+</p>
+
+<center><img src="images/remove_color_cast.svg"></center>
+
 <h3>Deep Learning 以降</h3>
 <p style="padding-left:1em;">
 『<strong>Learning to See in the Dark</strong>』 (2018)
@@ -233,6 +246,13 @@ Retinex 理論に基づき、ピクセルごとの「照明マップ」を高速
 </p>
 
 <center><img src="images/leaning_to_see_in_the_dark.svg"></center>
+
+<p>
+(蛇足)<br>
+　Deep Learningが、こんなこともできますと喧伝すると、従来技術でも意外と、そこそこできたりすることがある。
+</p>
+
+<center><img src="images/leaning_to_see_in_the_dark2.svg"></center>
 
 <p style="padding-left:1em;">
 『<strong>Deep Retinex Decomposition for Low-Light Image Enhancement</strong>』 (2018)
