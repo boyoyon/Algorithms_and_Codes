@@ -240,10 +240,18 @@ Wiener フィルターなどの古典的なブレ復元（データ忠実項）�
 <br><br>
 * それ以前にも Blind Deconvolution の研究はもちろんあった。<br>
 　『Blind deconvolution through digital signal processing』 (1975)<br>
-　　Blind Deconvolution という言葉を初めて使い、その問題設定を明確に定義した最初の論文<br><br>
+　　Blind Deconvolution という言葉を初めて使い、その問題設定を明確に定義した最初の論文<br>
 　『Automatic multidimensional deconvolution』 (1987)<br>
-　　2D 画像なら追加の情報なしでカーネルを分離できるという Zero-Sheet法 (Bates： 夭折した天才、だそうだが･･･)<br>
-　　ノイズに弱くてあまり流行らず･･･
+　　2D 画像なら追加の情報なしでカーネルを分離できるという Zero-Sheet法を提案
+<br>
+　『<a href="https://www.comm.toronto.edu/dkundur/pub_pdfs/KunHatSIP95.pdf">A Novel Recursive Filtering Method for Blind Image Restoration</a>』 (1995)<br>
+　　NAS-RIF(Nonnegativity and Support constraints Recursive Inverse Filtering)を提案
+</p>
+<center><img src="images/nas_rif.svg"></center>
+<p style="padding-left:4em;">
+　それらの研究はなぜ、現在の Blind Deblur の源流とみなされないのか、AIモードに聞いた。<br>
+<br>
+　1980〜90年代の古典的研究が「現実の複雑な手ブレ」を扱えず、数学的なトイプロブレム（おもちゃの問題）に終始していたのに対し、2006年の論文は「自然言語や写真の統計的性質」を初めて取り入れ、市販カメラのリアルなブレを実用レベルで解決してみせたからです。
 </p>
 
 <p><strong>High-quality motion deblurring</strong></p>
