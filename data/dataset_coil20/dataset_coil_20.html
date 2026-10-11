@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>COIL</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(データセット) COIL</center></h1>
+<h3>何ものか？</h3>
+<p>
+米コロンビア大学のCAVEラボ（Columbia Automated Vision Environment）が公開している、物体認識や3次元姿勢推定のアルゴリズム評価用の画像データセット。
+</p>
+
+<p>
+\[
+\begin{array}{l | l | l | l | l | l |  l}
+\textbf{データセット} & \textbf{物体数} & \textbf{画像} & \textbf{枚数} & \textbf{角度} & \textbf{画像サイズ}\\
+\hline
+\textbf{COIL-20} & \text{20種類} & \text{グレースケール} & \text{1,440枚} & \text{5°刻み} & \text{128×128}\\
+\hline
+\textbf{COIL-100} & \text{100種類} & \text{フルカラー} & \text{7,200枚} & \text{5°刻み} & \text{128×128}
+\end{array}
+\]
+</p>
+
+<br>
+
+<center><img src="images/coil20.svg"></center>
+
+<h4 style="padding-left:1em;">リポジトリ</h4>
+<p>
+<a href="https://cave.cs.columbia.edu/repository/COIL-20">https://cave.cs.columbia.edu/repository/COIL-20</a><br>
+・unprocessed：背景未処理<br>
+・processed： 背景削除済
+</p>
+
+<h4 style="padding-left:1em;">使い方</h4>
+<p>
+ダウンロードして、zipファイルを解凍すると、png画像群が得られる。
+</p>
+
+
+    </body>
+</html>
