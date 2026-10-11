@@ -40,7 +40,7 @@ Lecture notes with working Python code
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/bresenham/bresenham.html">Bresenham’s Algorithm</a></br>
 
 <h2>C</h2>
-
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/dataset_coil20/dataset_coil_20.html">(データセット) Coil-20</a><br>
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_collision_detect/task_collision_detect.html">(タスク) Collision Detection</a><br>
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_connected_componet_labeling/task_labelling.html">(タスク) Connected Componet Labeling (連結成分ラベリング)</a><br>
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_convex_hull/task_convex_hull.html">(タスク) Convex Hull Problem (凸包問題)</a><br>
@@ -64,7 +64,7 @@ Lecture notes with working Python code
 <h2>M</h2>
 
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/mds/mds.html">MDS: Multi Dimensional Scaling (多次元尺度構成法)</a><br>
-
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/dataset_mnist/dataset_mnist.html">(データセット) MNIST</a><br>
 <h2>N</h2>
 <h2>O</h2>
 <h2>P</h2>
