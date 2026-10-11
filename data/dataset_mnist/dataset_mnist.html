@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>MNIST</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(データセット) MNIST</center></h1>
+<h3>何ものか？</h3>
+<p>
+手書き数字（0〜9）の画像データセット。<br>
+正式名称は「Modified National Institute of Standards and Technology database」で、元のNISTのデータを加工して作られた。
+</p>
+
+<p>
+・<strong>構成</strong>：　訓練用データ 60,000枚、テスト用データ 10,000枚<br>
+・<strong>サイズ</strong>：　28ピクセル×28ピクセル<br>
+・<strong>フォーマット</strong>：　256 諧調 (8bit)<br>
+・<strong>正解ラベル</strong>：　各画像が何の数字(0～9) かを示す正解データ (ラベル) が一対一でセットになっている<br>
+</p>
+
+<h3>リポジトリ</h3>
+<p>
+<a href="http://yann.lecun.com/">Yann LeCun's Home Page</a> にはなくなったので、以下からダウンロードする
+<br><br>
+(訓練用画像)　<a href="https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz">https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz</a><br>
+(訓練用ラベル)　<a href="https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz">https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz</a></br>
+(テスト用画像)　<a href="https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz">https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz</a><br>
+(テスト用ラベル)　<a href="https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz">https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz</a>
+</p>
+
+<h3>ファイル構造</h3>
+
+<p>
+データは Big Endian で格納されている。<br>
+(オフセットの小さい方が上位バイト：MSB First)
+</p>
+
+<h4 style="padding-left:1em;">画像</h4>
+<p>
+オフセット：　データ<br>
+0～3：　　　　signature　0x00、0x00、0x08、0x03<br>
+4～7:　　　　  データ数 (訓練用は60,000、テスト用は10,000)<br>
+8～11:　　　　画像高さ(行数：28)<br>
+12～15: 　　　 画像幅(列数：28)<br>
+16～:　　 　 　画像データ
+</p>
+
+<h4 style="padding-left:1em;">ラベル</h4>
+<p>
+オフセット：　データ<br>
+0～3：　　　　signature　0x00、0x00、0x08、0x01<br>
+4～7:　　　　  データ数 (訓練用は60,000、テスト用は10,000)<br>
+8～:　　 　　    ラベル・データ
+</p>
+
+<h3>ファイルからのデータ抽出</h3>
+
+<p>● 画像データ<br>
+　ヘッダーを読み飛ばして、画像データを取得し、.npy に保存する。<br>
+　(data/dataset_mnist/src/file2numpy_train_images.py)<br>
+　(data/dataset_mnist/src/file2numpy_test_images.py)
+</p>
+<pre>
+<code style="padding-left:4em;">
+import gzip
+import numpy as np
+
+with gzip.open('train-images-idx3-ubyte.gz', 'rb') as f:
+    data = np.frombuffer(f.read(), np.uint8, offset=16)
+
+data = data.reshape((60000, 28,28))
+np.save('train_images.npy', data)
+print('save train_images.npy')
+print(data.shape)
+</code>
+</pre>
+
+<p>● ラベル・データ<br>
+　ヘッダーを読み飛ばして、ラベル・データを取得し、.npy に保存する。<br>
+　(data/dataset_mnist/src/file2numpy_train_labels.py)<br>
+　(data/dataset_mnist/src/file2numpy_test_labels.py)
+</p>
+<pre>
+<code style="padding-left:4em;">
+import gzip
+import numpy as np
+
+with gzip.open('train-labels-idx1-ubyte.gz', 'rb') as f:
+    data = np.frombuffer(f.read(), np.uint8, offset=8)
+
+np.save('train_labels.npy', data)
+print('save train_labels.npy')
+print(data.shape)
+</code>
+</pre>
+
+<p>●画像データ、ラベル・データ両用<br>
+　ヘッダーを参照して、画像/ラベル、訓練用/テスト用を判断し、.npy に保存する。<br>
+　(data/dataset_mnist/src/read_mnist.py)<br>
+</p>
+<pre>
+<code style="padding-left:4em;">
+import numpy as np
+import gzip
+
+def bytes2data(b):
+
+    data = b[3] + b[2] * 256 + b[1] * 256 * 256 + b[0] * 256 * 256 * 256
+    return data 
+
+def read_data(data_path):
+
+    with  gzip.open(data_path, mode='rb') as f:
+    
+        # read signature
+        b = f.read(4)
+        signature = bytes2data(b)
+       
+        if signature != 0x803 and signature != 0x801:
+            print('failed to read signature: %x' % signature)
+            return
+    
+        else:
+            print('succeeded to read signature: %x' % signature)
+    
+        # read number of data
+        b = f.read(4)
+        nr_data = bytes2data(b)
+        print('number of data:', nr_data)
+
+        if signature == 0x803: # Image
+        
+            # read height 
+            b = f.read(4)
+            height = bytes2data(b)
+    
+            # read width
+            b = f.read(4)
+            width = bytes2data(b)
+    
+            print('%d x %d' % (width, height)) 
+
+            images = np.frombuffer(f.read(), np.uint8, offset = 0)
+            images = images.reshape((nr_data, height, width)) 
+         
+            dst_path = '_images.npy'
+
+            if nr_data == 60000:
+                dst_path = 'train' + dst_path
+            elif nr_data == 10000:
+                dst_path = 'test' + dst_path
+            else:
+                dst_path = 'unknown' + dst_path
+
+            np.save(dst_path, images)
+            print('save %s' % dst_path)
+            print(images.shape)
+
+        else: # Labels
+
+            labels = np.frombuffer(f.read(), np.uint8, offset = 0)
+            
+            dst_path = '_labels.npy'
+
+            if nr_data == 60000:
+                dst_path = 'train' + dst_path
+            elif nr_data == 10000:
+                dst_path = 'test' + dst_path
+            else:
+                dst_path = 'unknown' + dst_path
+
+            np.save(dst_path, labels)
+            print('save %s' % dst_path)
+            print(labels.shape)
+
+import sys
+
+def main():
+
+    argv = sys.argv
+    argc = len(argv)
+
+    print('%s read MNIST dataset' % argv[0])
+    print('[usage] python %s (MNIST gz file)' % argv[0])
+
+    if argc < 2:
+        quit()
+        
+    read_data(argv[1])
+
+if __name__ == '__main__':
+    main()
+</code>
+</pre>
+
+<h3>画像データの一部表示</h3>
+
+<p>● .npy ファイルからラベル・データ、画像データを取得し、一部を表示する。<br>
+　(data/dataset_mnist/src/display_partial.py)<br>
+</p>
+<pre>
+<code style="padding-left:4em;">
+import cv2, sys
+import numpy as np
+
+NR_IMAGES = 10
+WIDTH = 28
+HEIGHT = 28
+
+argv = sys.argv
+argc = len(argv)
+
+print('%s display a small portion of MNST' % argv[0])
+print('[usage] python %s (label(.npy))  (image(.npy))' % argv[0])
+
+if argc < 3:
+    quit()
+
+data1 = np.load(argv[1])
+data2 = np.load(argv[2])
+
+if len(data1.shape) == 1 and len(data2.shape) == 3:
+    labels = data1
+    images = data2
+elif len(data1.shape) == 3 and len(data2.shape) == 1:
+    labels = data2
+    images = data1
+else:
+    print('unexpected data')
+    print('%s:' % argv[1], data1.shape)
+    print('%s:' % argv[2], data2.shape)
+    quit()
+
+row_imgs = np.zeros((0, WIDTH * NR_IMAGES), np.uint8)
+
+for i in range(10):
+
+    indices = np.where(labels == i)[0]
+    
+    col_imgs = np.zeros((HEIGHT, 0), np.uint8)
+    for index in indices[:NR_IMAGES]:
+        img = images[index]
+        col_imgs = np.hstack((col_imgs, img))
+
+    row_imgs = np.vstack((row_imgs, col_imgs))
+
+cv2.imshow('partial', row_imgs)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+cv2.imwrite('partial.png', row_imgs)
+print('save partial.png')
+
+
+</code>
+</pre>
+
+<center><img src="images/partial.png"><center>
+    </body>
+</html>
