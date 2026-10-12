@@ -111,7 +111,19 @@
 \]
 </p>
 
-<h4 style="padding-left:1em;">csv → numpy 配列への変換</h4>
+<h4 style="padding-left:1em;">sci-kit learn でIRISデータセットを取得する場合</h4>
+
+<pre>
+<code style="padding-left:4em;">
+from sklearn.datasets import load_iris
+
+iris = load_iris()
+features = iris.data
+label = iris.target
+</code>
+</pre>
+
+<h4 style="padding-left:1em;">csv から numpy 配列に変換する場合</h4>
 
 <p>
 pandas を使って csv を numpy 配列に変換してみる。<br>
