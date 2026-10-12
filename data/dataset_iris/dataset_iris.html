@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>IRIS</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(データセット) IRIS</center></h1>
+<h3>何ものか？</h3>
+<p>
+1936年にイギリスの統計学者ロナルド・フィッシャー氏の論文で発表されたため、「フィッシャーのIrisデータセット」とも呼ばれる。<br>
+『<a href="https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/j.1469-1809.1936.tb02137.x">The use of multiple measurements in taxonomic problems</a>』
+</p>
+
+<p>
+3種類のアヤメ（ヒオウギアヤメなど）の「がく片」と「花びら」のサイズを計測したもので、主に多クラス分類（特徴量から花の種類を当てるタスク）のチュートリアルやアルゴリズムのベンチマークとして利用される。
+</p>
+
+<h4 style="padding-left:1em;">特徴量</h4>
+<p>
+① sepal length (cm) がく片の長さ ･･･ 花の根元にある「がく」の縦の長さ<br>
+② sepal width (cm) がく片の幅 ･･･ 「がく」の横の幅<br>
+③ petal length (cm) 花びらの長さ ･･･ 花弁（花びら）の縦の長さ<br>
+④ petal width (cm) 花びらの幅 ･･･ 花弁（花びら）の横の幅
+</p>
+
+<h4 style="padding-left:1em;">正解ラベル（品種）</h4>
+<p>
+[1] setosa（セトサ / ヒオウギアヤメ）<br>
+[2] versicolor（バーシカラー / ブルーフラッグ）<br>
+[3] virginica（バージニカ）
+</p>
+
+<center><img src="images/features_labels.svg"></center>
+
+<p>
+データセット(一部)
+
+\[
+\begin{array}{c | c | c | c | l}
+\textbf{sepal.length} &	\textbf{sepal.width} & \textbf{petal.length} & \textbf{petal.width} & \textbf{variety} \\
+\hline
+5.1 &	3.5 &	1.4 &	0.2 &	\text{Setosa}\\
+4.9 &	3 &	1.4 &	0.2 &	\text{Setosa}\\
+4.7 &	3.2 &	1.3 &	0.2 &	\text{Setosa}\\
+
+\text{:} & \text{:} & \text{:} & \text{:} & \text{:}\\
+
+7 & 	3.2 &	4.7 &	1.4 &	\text{Versicolor}\\
+6.4 &	3.2 &	4.5 &	1.5 &	\text{Versicolor}\\
+6.9 &	3.1 &	4.9 &	1.5 &	\text{Versicolor}\\
+\text{:} & \text{:} & \text{:} & \text{:} & \text{:}\\
+
+6.3 &	3.3 &	6 &	2.5 &	\text{Virginica}\\
+5.8 &	2.7 &	5.1 &	1.9 &	\text{Virginica}\\
+7.1 &	3 &	5.9 &	2.1 &	\text{Virginica}\\
+
+\text{:} & \text{:} & \text{:} & \text{:} & \text{:}\\
+\end{array}
+\]
+</p>
+
+<h4 style="padding-left:1em;">csv → numpy 配列への変換</h4>
+
+<p>
+pandas を使って csv を numpy 配列に変換してみる。<br>
+(data/dataset_iris/src/csv2npy.py)<br>
+label.npy は文字列の配列になる。
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+import numpy as np
+import pandas as pd
+
+# iris.csv を読み込む。タイトル行は自動でスキップしてくれる
+df = pd.read_csv("..\data\iris.csv")
+
+# 特徴量（最初の4列）とラベル（最後の列）に分割する
+features = df.iloc[:, :4].to_numpy()
+label = df.iloc[:, -1].to_numpy()
+
+print(features.shape)
+print(label.shape)
+
+# numpy形式 (.npy) で保存する
+np.save("features.npy", features)
+np.save("label.npy", label)
+
+print("conversion completed: iris.csv --> features.npy， label.npy")
+</code>
+</pre> 
+
+<p>
+label.npy をロードする場合は、
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+label = np.load('label.npy', allow_pickle=True)
+</code>
+</pre>
+
+<p>
+と、オプションを設定しないと、ValueError が起こる。
+</p>
+
+<p>
+ラベルを数値化して .npy に格納したい場合は、以下のようにする。<br>
+(data/dataset_iris/src/csv2npy2.py)<br>
+label_encoded.npy には 0(Setosa)、1(Versicolor)、2(Virginica)が格納される。
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+
+# iris.csv を読み込む。タイトル行は自動でスキップしてくれる
+df = pd.read_csv("..\data\iris.csv")
+
+# 特徴量（最初の4列）とラベル（最後の列）に分割する
+features = df.iloc[:, :4].to_numpy()
+
+le = LabelEncoder()
+label_encoded = le.fit_transform(df.iloc[:, -1])
+
+print(features.shape)
+print(label_encoded.shape)
+
+# numpy形式 (.npy) で保存する
+np.save("features.npy", features)
+np.save("label_encoded.npy", label_encoded)
+
+print("conversion completed: iris.csv --> features.npy， label_encoded.npy")
+</code>
+</pre>
+
+
+<h4 style="padding-left:1em;">データの視覚化</h4>
+
+<p>
+正解ラベル(品種)の3種類は、赤、緑、青などの色で視覚化できる。<br>
+特徴量は4次元でそのままでは視覚化できないので、<br>
+・4個の内の2個<br>
+・4個の内の3個<br>
+で視覚化してみる。<br>
+※ 次元削減による視覚化は、"(タスク) 次元削減" で試すこととして、ここでは試さない。<br>
+※ 赤：setosa、緑：versicolor、オレンジ：virginica
+</p>
+
+<p><strong>特徴量 4 個の内の 2 個の散布図</strong></p>
+
+<center><img src="images/scatter_2d.png"></center>
+
+<p style="padding-left:4em;">
+コードの一部<br>
+(data/dataset_iris/src/scatter_2d.py)
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+import numpy as np
+import matplotlib.pyplot as plt
+
+features = np.load('..\data\features.npy')
+label = np.load('..\data\label_encoded.npy')
+
+indices0 = np.where(label == 0)[0]
+indices1 = np.where(label == 1)[0]
+indices2 = np.where(label == 2)[0]
+
+fig, axes = plt.subplots(2, 3, figsize=(10, 6))
+
+# [0][0] sepal.length vs sepal.width
+
+x0 = features[indices0, 0]
+y0 = features[indices0, 1]
+axes[0][0].scatter(x0, y0, color='red')
+
+x1 = features[indices1, 0]
+y1 = features[indices1, 1]
+axes[0][0].scatter(x1, y1, color='green')
+
+x2 = features[indices2, 0]
+y2 = features[indices2, 1]
+axes[0][0].scatter(x2, y2, color='yellow')
+
+axes[0][0].set_title('sepal.length vs sepal.width')
+
+：
+
+plt.show()
+</code>
+</pre>
+
+<p><strong>特徴量 4 個の内の 3 個の散布図</strong></p>
+
+<center><img src="images/scatter_3d.png"></center>
+
+<p style="padding-left:4em;">
+コードの一部<br>
+(data/dataset_iris/src/scatter_3d.py)
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+import matplotlib.pyplot as plt
+import numpy as np
+
+features = np.load('..\\data\\features.npy')
+label = np.load('..\\data\\label_encoded.npy')
+
+indices0 = np.where(label == 0)[0]
+indices1 = np.where(label == 1)[0]
+indices2 = np.where(label == 2)[0]
+
+fig, axes = plt.subplots(2, 2, figsize=(8, 6), subplot_kw={'projection': '3d'})
+
+# [0][0] Excluding  petal.width
+
+x0 = features[indices0, 0]
+y0 = features[indices0, 1]
+z0 = features[indices0, 2]
+axes[0][0].scatter(x0, y0, z0, color='red')
+
+x1 = features[indices1, 0]
+y1 = features[indices1, 1]
+z1 = features[indices1, 2]
+axes[0][0].scatter(x1, y1, z1, color='green')
+
+x2 = features[indices2, 0]
+y2 = features[indices2, 1]
+z2 = features[indices2, 2]
+axes[0][0].scatter(x2, y2, z2, color='orange')
+
+axes[0][0].set_title('Excluding petal.width')
+
+:
+
+plt.show()
+</code>
+</pre>
+
+    </body>
+</html>
