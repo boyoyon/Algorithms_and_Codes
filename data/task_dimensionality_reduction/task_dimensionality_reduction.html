@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>次元削減</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(タスク) Dimensionality Reduction (次元削減)</center></h1>
+<h3>何ものか？</h3>
+<p>
+高次元のデータが持つ重要な情報（本質的な特徴や関係性）をできるだけ維持しながら、より少ない変数（低次元のデータ）に変換する処理のこと
+</p>
+
+<h4 style="padding-left:1em;">データの可視化が容易になる</h4>
+<p>
+人間には認識できない高次元データでも、2次元や3次元に削減することで、散布図などのグラフにプロットして視覚的にクラスタ（集まり）やパターンを確認できるようになる。
+</p>
+
+<h4 style="padding-left:1em;">計算コストの削減</h4>
+<p>
+特徴量が増えると、計算コストの肥大化や予測精度の低下を招く「次元の呪い」と呼ばれる問題が発生する。<br>
+特徴量の数が減るため、機械学習モデルの学習スピードが大幅に向上し、必要なメモリやストレージの量も節約できる。
+</p>
+
+<h4 style="padding-left:1em;">過学習（オーバーフィッティング）の防止</h4>
+<p>
+予測に関係のないノイズや冗長な情報を取り除くことで、モデルが未知のデータに対して正しく予測できる能力（汎化性能）が高まる。
+</p>
+
+<h3>手法</h3>
+
+<center><img src="images/methods.svg"></center>
+
+<p>
+手法により、データの見え方が異なる。どれが正解と言えないが･･･
+</p>
+
+<p>
+(お試し用データ)<br>
+・(data/task_dimensiona/reduction/src/sample_mnist_20_data.py)<br>
+　でテストデータから各文字20個を抽出した。<br>
+・(data/task_dimensiona/reduction/src/create_coil20_images.py)<br>
+　で32×32に縮小したデータを作成した。
+</p>
+
+<h4 style="padding-left:1em;">線形普遍手法 (古典的・統計的アプローチ)</h4>
+
+<p><strong>主成分分析(PCA)</strong></p>
+
+<p style="padding-left:3em;">
+・『<a href="https://pca.narod.ru/pearson1901.pdf">On lines and planes of closest fit to systems of points in space</a>』(1901)<br>
+　<a href="https://en.wikipedia.org/wiki/Principal_component_analysis">https://en.wikipedia.org/wiki/Principal_component_analysis</a>
+</p>
+
+<p style="padding-left:3em;">
+統計学の祖の一人であるピアソンが、空間上の点群に最もフィットする直線や平面を求める幾何学的なアプローチとして提案しました。
+</p>
+
+<p style="padding-left:3em;">
+<strong><span style="color:magenta;">データの分散が最大となる方向（主成分）を見つけ</span></strong>、直交基底に射影する手法。<br>
+</p>
+
+<p style="padding-left:3em;">
+※ データが曲線に沿って分布するような場合は、うまくいかない → カーネルPCA
+</p>
+
+<p style="padding-left:3em;">
+<strong>お試しコード</strong><br>
+(data/task_dimensionality_reduction/src/iris_dim_reduction_by_pca.py)<br>
+(data/task_dimensionality_reduction/src/mnist_dim_reduction_by_pca.py)<br>
+(data/task_dimensionality_reduction/src/coil20_dim_reduction_by_pca.py)
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+import numpy as np
+from sklearn.decomposition import PCA
+
+Data_high_dim = np.load(...) # 高次元データをロード
+
+pca = PCA(n_components = 2)
+pca.fit(Data_high_dim)
+Data_2d = pca.transform(Data_high_dim)
+</code>
+</pre>
+
+<center><img src="images/result_pca.svg"></center>
+
+<p><strong>線形判別分析 (LDA)</strong></p>
+
+<p style="padding-left:3em;">
+・『<a href="https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/j.1469-1809.1936.tb02137.x">The use of multiple measurements in taxonomic problems</a>』 (1936)<br>
+・『<a href="https://arxiv.org/html/2309.04774v1">Fisher’s Pioneering work on Discriminant Analysis and its Impact on AI</a>』 (2023)<br>
+・<a href="https://en.wikipedia.org/wiki/Chernoff_face">チェルノフの顔表現 (Chernoff face representations)</a>
+</p>
+
+<p style="padding-left:3em;">
+アヤメのデータ（Fisher's Iris）を用いて、分類（分類器）と次元削減を同時に行う手法としてフィッシャーが提唱しました。
+</p>
+
+<p style="padding-left:3em;">
+クラスラベルを利用し、<strong><span style="color:magenta;">クラス間分散を最大化・クラス内分散を最小化</span></strong>する射影軸を見つける手法。<br>
+<strong><span style="color:magenta;">教師あり</span></strong>の手法
+</p>
+
+<p style="padding-left:3em;">
+<strong>お試しコード</strong><br>
+(data/task_dimensionality_reduction/src/iris_dim_reduction_by_lda.py)
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+import numpy as np
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
+Data_high_dim = np.load(...)  # 高次元データをロード
+label = np.load(...)          # ラベルも必要
+
+lda = LinearDiscriminantAnalysis(n_components=2)
+Data_2d = lda.fit_transform(Data_high_dim, label)
+</code>
+</pre>
+
+<p><strong>多次元尺度構成法 (MDS)</strong></p>
+
+<p style="padding-left:3em;">
+・『<a href="http://www.galileoco.com/literature/OCRTorgerson52.pdf">Multidimensional scaling: I. Theory and method</a>』 (1952)
+</p>
+
+<p style="padding-left:3em;">
+高次元空間における<strong><span style="color:magenta;">サンプル間の距離 (類似度) を、低次元空間でもできるだけ維持する</span></strong>ように配置する手法
+</p>
+
+<p style="padding-left:3em;">
+元々は心理物理学（人間の感覚の計量）の分野で、主観的な類似度から空間的な配置を構成するために提案されました。
+</p>
+
+<p style="padding-left:3em;">
+<strong>お試しコード</strong><br>
+(data/task_dimensionality_reduction/src/iris_dim_reduction_by_mds.py)
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+import numpy as np
+from sklearn import manifold
+
+Data_high_dim = np.load(...)  # 高次元データをロード
+
+N = Data_high_dim.shape[0]
+P = np.empty((N, N), np.float32)
+
+for y in range(N):
+    for x in range(N):
+        P[y][x] = np.linalg.norm(Data_high_dim[y] - Data_high_dim[x])
+
+P2 = P ** 2 # 各要素を2乗
+
+mds = manifold.MDS(n_components = 2,  dissimilarity = 'precomputed')
+Data_2d = mds.fit_transform(P2)
+</code>
+</pre>
+
+<h4 style="padding-left:1em;">カーネル法</h4>
+
+<p>
+線形手法では捉えられない複雑な非線形構造を、カーネル関数を用いて高次元特徴空間（ヒルベルト空間）に写像してから線形処理する系譜
+</p>
+
+<p><strong>カーネル主成分分析 (Kernel PCA)</strong></p>
+
+<p style="padding-left:3em;">
+・『<a href="https://graphics.stanford.edu/courses/cs233-25-spring/ReferencedPapers/scholkopf_kernel.pdf">Kernel principal component analysis</a>』 (1997)
+</p>
+
+<p style="padding-left:3em;">
+サポートベクターマシンなどで成果を上げていた<strong><span style="color:magenta;">「カーネルトリック」を、初めてPCAに融合させた</span></strong>画期的な論文です。
+</p>
+
+<p style="padding-left:3em;">
+<strong>お試しコード</strong><br>
+(data/task_dimensionality_reduction/src/iris_dim_reduction_by_kernel_pca.py)
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+import numpy as np
+from sklearn.decomposition import KernelPCA
+
+Data_high_dim = np.load(...) # 高次元データをロード
+
+kpca = KernelPCA(n_components=2, kernel='rbf', gamma=0.5)
+Data_2d = kpca.fit_transform(Data_high_dim)
+</code>
+</pre>
+
+<h4 style="padding-left:1em;">多様体学習</h4>
+
+<p>
+データが高次元空間内に潜む「低次元の滑らかな曲面（多様体）」上に分布していると仮定し、その局所的なトポロジーや近傍関係を維持したまま平坦に開く系譜
+</p>
+
+<p><strong>Isomap</strong></p>
+
+<p style="padding-left:3em;">
+・『<a href="https://www.eliassi.org/tenenbaum-isomap-Science2000.pdf">A global geometric framework for nonlinear dimensionality reduction</a>』 (2000)
+</p>
+
+<p style="padding-left:3em;">
+<strong><span style="color:magenta;">測地線距離（近傍グラフ上の最短経路）を計算し、それをMDSに適用</span></strong>して大域的な幾何構造を維持する手法
+</p>
+
+<p><strong>LLE (Locally Linear Embedding)</strong></p>
+
+<p style="padding-left:3em;">
+・『<a href="https://www.robots.ox.ac.uk/~az/lectures/ml/lle.pdf">Nonlinear dimensionality reduction by locally linear embedding</a>』 (2000)
+</p>
+
+<p style="padding-left:3em;">
+各点の<strong><span style="color:magenta;">局所的な線形結合関係（重み）を保ったまま低次元に写像する</span></strong>手法
+</p>
+
+<p><strong>Laplacian Eigenmaps</strong></p>
+
+<p style="padding-left:3em;">
+・『<a hrf="https://www.cise.ufl.edu/~arunava/Teaching/cap6617sp21/Readings/LEM_NIPS_01.pdf">Laplacian eigenmaps and spectral techniques for embedding and clustering</a>』 (2003)
+</p>
+
+<p style="padding-left:3em;">
+グラフのラプラシアンを用いて、<strong><span style="color:magenta;">近傍にある点同士を低次元空間でも近くに配置する</span></strong>手法
+</p>
+
+<h4 style="padding-left:1em;">確率的・情報幾何学的アプローチ</h4>
+
+<p>
+高次元におけるサンプルの近傍確率分布と、低次元における確率分布の間の情報損失（Kullback-Leibler情報量など）を最小化するアプローチです。視覚化に極めて優れています。
+</p>
+
+<p><strong>SNE (Stochastic Neighbor Embedding)</strong></p>
+
+<p style="padding-left:3em;">
+・『<a href="https://www.cs.toronto.edu/~hinton/absps/sne.pdf">Stochastic neighbor embedding</a>』 (2002)
+</p>
+
+<p style="padding-left:3em;">
+AIの世界的権威ジェフリー・ヒントンらが提案した、確率分布の差異（KLダイバージェンス）を最小化するアプローチの原点です。
+</p>
+
+<p><strong>t-SNE</strong></p>
+
+<p style="padding-left:3em;">
+・『<a href="https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf">Visualizing data using t-SNE</a>』 (2008)
+</p>
+
+<p style="padding-left:3em;">
+SNEで発生していた「クラウド問題（データが中心に密集してしまう問題）」を、低次元側にt分布を採用することで解決した、可視化における超重要論文
+</p>
+
+<p style="padding-left:3em;">
+<strong>お試しコード</strong><br>
+(data/task_dimensionality_reduction/src/iris_dim_reduction_by_pca.py)<br>
+(data/task_dimensionality_reduction/src/mnist_dim_reduction_by_pca.py)<br>
+(data/task_dimensionality_reduction/src/coil20_dim_reduction_by_pca.py)
+</p>
+
+<center><img src="images/result_t-sne.svg"></center>
+
+
+<p><strong>UMAP</strong></p>
+
+<p style="padding-left:3em;">
+・『<a href="https://arxiv.org/abs/1802.03426">UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction</a>』 (2018)
+</p>
+
+<p style="padding-left:3em;">
+リーマン幾何学と代数的トポロジーの理論に基づき、t-SNEよりも大域的な構造（クラスター間の位置関係）を維持しつつ高速に計算する現代の主流手法
+</p>
+
+<h4 style="padding-left:1em;">ニューラルネットワーク</h4>
+
+<p><strong>Autoencoder</strong></p>
+
+<p style="padding-left:3em;">
+・『<a href="https://www.cs.toronto.edu/~hinton/absps/science.pdf">Reducing the dimensionality of data with neural networks</a>』 (2006)
+</p>
+
+<p style="padding-left:3em;">
+ディープニューラルネットワークの「多層のボトルネック」を事前学習（Pre-training）によって最適化し、当時の非線形PCAを圧倒する精度を出して第三次AIブーム（ディープラーニング）の引き金となった論文です。
+</p>
+
+<p style="padding-left:3em;">
+入力と出力が同じになるように中間層（ボトルネック）を訓練する。
+</p>
+
+<p><strong>変分オートエンコーダ(VAE)</strong></p>
+
+<p style="padding-left:3em;">
+・『<a href="https://arxiv.org/abs/1312.6114">Auto-encoding variational Bayes</a>』 (2013)
+</p>
+
+<p style="padding-left:3em;">
+次元削減を「確率的な生成モデル」の文脈（変分ベイズ）で再定義し、現在の画像生成AIなどの基礎を築きました。
+</p>
+
+<p style="padding-left:3em;">
+潜在空間に確率分布（通常はガウス分布）を仮定し、生成モデルとしての性質を持たせた次元削減。
+</p>
+
+    </body>
+</html>
