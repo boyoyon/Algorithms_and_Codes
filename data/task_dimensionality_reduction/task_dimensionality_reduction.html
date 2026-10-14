@@ -156,7 +156,9 @@ Data_2d = pca.transform(Data_high_dim)
 
 <p style="padding-left:3em;">
 <strong>お試しコード</strong><br>
-(data/task_dimensionality_reduction/src/iris_dim_reduction_by_lda.py)
+(data/task_dimensionality_reduction/src/iris_dim_reduction_by_lda.py)<br>
+(data/task_dimensionality_reduction/src/mnist_dim_reduction_by_lda.py)<br>
+(data/task_dimensionality_reduction/src/coil20_dim_reduction_by_lda.py)
 </p>
 
 <pre>
@@ -171,6 +173,8 @@ lda = LinearDiscriminantAnalysis(n_components=2)
 Data_2d = lda.fit_transform(Data_high_dim, label)
 </code>
 </pre>
+
+<center><img src="images/result_lda.svg"></center>
 
 <p><strong>多次元尺度構成法 (MDS)</strong></p>
 
@@ -188,7 +192,9 @@ Data_2d = lda.fit_transform(Data_high_dim, label)
 
 <p style="padding-left:3em;">
 <strong>お試しコード</strong><br>
-(data/task_dimensionality_reduction/src/iris_dim_reduction_by_mds.py)
+(data/task_dimensionality_reduction/src/iris_dim_reduction_by_mds.py)<br>
+(data/task_dimensionality_reduction/src/mnist_dim_reduction_by_mds.py)<br>
+(data/task_dimensionality_reduction/src/coil20_dim_reduction_by_mds.py)
 </p>
 
 <pre>
@@ -199,11 +205,13 @@ from sklearn import manifold
 Data_high_dim = np.load(...)  # 高次元データをロード
 
 N = Data_high_dim.shape[0]
-P = np.empty((N, N), np.float32)
+P = np.zeros((N, N), np.float32)
 
 for y in range(N):
     for x in range(N):
-        P[y][x] = np.linalg.norm(Data_high_dim[y] - Data_high_dim[x])
+        if x < y:
+            continue
+        P[y][x] = P[x][y] = np.linalg.norm(Data_high_dim[y] - Data_high_dim[x])
 
 P2 = P ** 2 # 各要素を2乗
 
@@ -211,6 +219,8 @@ mds = manifold.MDS(n_components = 2,  dissimilarity = 'precomputed')
 Data_2d = mds.fit_transform(P2)
 </code>
 </pre>
+
+<center><img src="images/result_mds.svg"></center>
 
 <h4 style="padding-left:1em;">カーネル法</h4>
 
@@ -309,9 +319,9 @@ SNEで発生していた「クラウド問題（データが中心に密集し�
 
 <p style="padding-left:3em;">
 <strong>お試しコード</strong><br>
-(data/task_dimensionality_reduction/src/iris_dim_reduction_by_pca.py)<br>
-(data/task_dimensionality_reduction/src/mnist_dim_reduction_by_pca.py)<br>
-(data/task_dimensionality_reduction/src/coil20_dim_reduction_by_pca.py)
+(data/task_dimensionality_reduction/src/iris_dim_reduction_by_t_sne.py)<br>
+(data/task_dimensionality_reduction/src/mnist_dim_reduction_by_t_sne.py)<br>
+(data/task_dimensionality_reduction/src/coil20_dim_reduction_by_t_sne.py)
 </p>
 
 <center><img src="images/result_t-sne.svg"></center>
@@ -326,6 +336,15 @@ SNEで発生していた「クラウド問題（データが中心に密集し�
 <p style="padding-left:3em;">
 リーマン幾何学と代数的トポロジーの理論に基づき、t-SNEよりも大域的な構造（クラスター間の位置関係）を維持しつつ高速に計算する現代の主流手法
 </p>
+
+<p style="padding-left:3em;">
+<strong>お試しコード</strong><br>
+(data/task_dimensionality_reduction/src/iris_dim_reduction_by_umap.py)<br>
+(data/task_dimensionality_reduction/src/mnist_dim_reduction_by_umap.py)<br>
+(data/task_dimensionality_reduction/src/coil20_dim_reduction_by_umap.py)
+</p>
+
+<center><img src="images/result_umap.svg"></center>
 
 <h4 style="padding-left:1em;">ニューラルネットワーク</h4>
 
