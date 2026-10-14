@@ -15,7 +15,7 @@ for i in range(20):
     indices = np.where(labels == i)[0]
     plt.scatter(Xd[indices,0], Xd[indices,1], color=cmap(i), marker=f"${i}$", label='obj%d' % (i+1)) 
 
-plt.legend()
+#plt.legend()
 plt.tight_layout()
 plt.show()
 

@@ -10,11 +10,13 @@ indices1 = np.where(label == 1)[0]
 indices2 = np.where(label == 2)[0]
 
 N = features.shape[0]
-P = np.empty((N, N), np.float32)
+P = np.zeros((N, N), np.float32)
 
 for y in range(N):
     for x in range(N):
-        P[y][x] = np.linalg.norm(features[y]-features[x])
+        if x < y:
+            continue
+        P[y][x] = P[x][y] = np.linalg.norm(features[y]-features[x])
 
 P2 = P ** 2 # 各要素を2乗
 
