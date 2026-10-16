@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>歩行者検出</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0.50%; /* 幅を50%に設定して2列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+
+    </head>
+    <body>
+        <h1><center>(タスク) Pedestrian Detection： 歩行者検出</center></h1>
+<h3>何ものか？</h3>
+<p>
+画像や動画の中から人間の歩行者を自動で認識し、その位置を特定するコンピュータビジョンおよび物体検出の応用タスク。一般的には、画像内の歩行者を四角い枠（バウンディングボックス）で囲んで検出する。
+</p>
+
+<p>
+一般的な「物体検出（車や椅子など）」に比べ、歩行者検出には以下のような特有の難しさがある。
+
+<div class="styleBullet">
+<ul><li>
+<strong>多様な外見</strong><br>
+服装、持ち物（傘やバッグ）、年齢や体型によって見た目が大きく変わる。
+</li><br><li>
+
+<strong>姿勢の変化（関節変形 articulation)</strong><br>
+歩く、走る、しゃがむなど、人間の身体は柔軟に変形する。
+</li><br><li>
+
+<strong>遮蔽（occlusion）</strong><br>
+他の歩行者や電柱、傘、駐車車両などの影に隠れて、身体の一部しか見えないケースが頻発する。
+</li><br><li>
+
+<strong>解像度・マルチスケール</strong><br>
+遠くにいる歩行者は非常に小さく（極小物体）、近くの歩行者は大きく映るため、あらゆるサイズに対応する必要がある。
+</li></ul></div>
+</p>
+
+<h3>手法</h3>
+<p>
+二段階(*)で AI 化(機械学習化) されていった歴史を眺めることができる。<br>
+* ① 検出器の機械学習化 → ② 特徴量生成＋検出器 の機械学習化
+</p>
+
+<center><img src="images/methods.svg"></center>
+
+　以下は、AIモードの受け売り
+
+<h4 style="padding-left:1em">Haar-like特徴量＋多項式カーネルSVM (1997)</h4>
+<p>
+● 『Training support vector machines: an application to face detection』 (CVPR1997)<br>
+● 『Pedestrian detection using wavelet templates』 (CVPR1997)
+</p>
+
+<p>
+1990年代中盤までの物体認識は、物体のエッジを検出して3次元の幾何学的なモデルを組み立てるアプローチ（手画きのルールベース）が主流でした。しかし、これらは服装の変化や乱雑な (clutter) 背景に弱いという致命的な弱点がありました。
+</p>
+
+<p>
+Papageorgiouらの手法は、「大量のデータから特徴と識別器を機械学習（SVM）によって獲得する」という現代の画像認識に直結するデータ駆動型アプローチの有効性を決定づけたパイオニアです。
+</p>
+
+<p>
+のちにデジタルカメラの顔認識などで世界中で実用化されたViola-Jones 法（2001年）は、このPapageorgiouの手法を直接ベースにしています。
+</p>
+
+<p>
+この研究で示された「画像から局所的な輝度勾配や明暗差を抜き出し、SVMで識別する」という <strong><span style="color:magenta;">(手作りの局所特徴量＋機械学習で作成した識別器)  パイプライン は、その後のコンピュータビジョン界の王道となりました。</span></strong>
+</p>
+
+
+<h4 style="padding-left:1em">Haar-like特徴量＋AdaBoost (2003)</h4>
+<p>
+● 『Detecting Pedestrians Using Patterns of Motion and Appearance』 (2003)
+</p>
+
+<p>
+デジタルカメラの顔認識で一世を風靡した伝説的な Viola-Jones法（2001年） を、動画内の「動く歩行者」向けに進化させたもの。
+</p>
+
+<p>
+<strong>外見（Appearance）と動き（Motion）の融合</strong><br>
+それまでの物体検出は、1枚の静止画から形を捉える「外見ベース」か、映像の差分から動体を捉える「動きベース」のいずれかに偏っていました。この論文は、ビデオの連続する2フレームを同時にスキャンし、<strong><span style="color:magenta;">外見と動きの情報を単一の識別器の中で初めて統合しました。</span></strong><br>
+のちの動画理解、行動認識（Action Recognition）、自動運転システムにおける歩行者行動予測の基礎となる考え方です。
+</p>
+
+<p>
+<strong>時空間Haar-like特徴量</strong><br>
+静止画用の矩形フィルタ（Haar-like特徴量）を時間軸に拡張し、前のフレームと今のフレームの特定の場所の明暗差（＝動きのパターン）を計算する特徴量を定義しました。
+</p>
+
+<p>
+<strong>超小型・遠距離の歩行者に対応</strong><br>
+AdaBoostによる高速な処理能力を活かし、解像度がわずか 20×15ピクセル 程度の、画面の奥にいる非常に小さな歩行者でも高い精度かつ低誤検出率で検出することに成功しました。
+</p>
+
+<h4 style="padding-left:1em">HOG＋線形SVM (2005)</h4>
+<p>
+● 『Histograms of Oriented Gradients for Human Detection』 (CVPR2005)
+</p>
+
+<p>
+コンピュータビジョン、特に「歩行者・人物検出」の分野においてディープラーニング（CNN）が登場する前までの最高峰の基準（ゴールデンスタンダード）を確立した、歴史的な超重要論文です。
+</p>
+
+<p>
+それまでのHaar-like特徴量のような単純な明暗差ではなく、画像の「輝度勾配（エッジ）の方向と強さ」に注目し、それを統計的なヒストグラムとして表現する手法を提案しました。
+<div class="styleBullet">
+<ul><li>
+1. 画像の局所領域（セル：例として8×8ピクセルなど）ごとに、各画素のエッジの方向（角度）と強さを計算。
+
+</li><br><li>
+
+2. 方向ごとにエッジの強さを投票し、勾配方向ヒストグラムを作成。
+
+</li><br><li>
+
+3. 複数のセルをまとめた大きな領域（ブロック）ごとにコントラストの正規化を行い、照明変化や影の影響を相殺。
+
+</li><br><li>
+
+4. 最終的な特徴ベクトルを線形SVM（サポートベクターマシン）に投入して人物か否かを識別。
+
+</li></ul></div>
+</p>
+
+<p>
+
+<strong>人物の「輪郭（シェイプ）」を捉える決定版となった</strong><br>
+顔とは異なり、歩行者は服装（色や柄）、背景、体型、姿勢が激しく変化するため、明暗差ベースのHaar-like特徴量では誤検出が多発していました。
+本論文は、<strong><span style="color:magenta;">人間を識別する最大のヒントが「衣服の模様や色ではなく、外見の輪郭（エッジの分布）」にあることを見抜き、それを緻密なヒストグラムで捉えることに成功しました。</span></strong>これにより、複雑な背景の中に立つ様々な服装の人間を正確に検出できるようになりました。<br>
+現在のCNNの内部フィルタも、本質的にはこのHOGのような「エッジの方向」を抽出する処理を自動で学習していることが分かっています。
+
+</p>
+
+<p>
+<strong>徹底的な実験による「職人技（ハンドクラフテッド特徴量）」の頂点</strong><br>
+この論文の恐ろしい点は、特徴量抽出の各ステップ（平滑化フィルタの有無、方向の分割数、ブロックの重ね合わせ方など）をすべて徹底的に実験し、「何が性能に直結するのか」を数値的に証明した点にあります。<br>
+• 「画像にガウシアンフィルタ等でぼかしを入れない（細かいエッジが重要）」<br>
+• 「エッジの方向は0〜180度（符号なし）を9分割するのがベスト」<br>
+• 「ブロックをオーバーラップさせて高精度に局所正規化を行う」<br>
+といった、現代でも手画き特徴量（Hand-crafted features）を扱う上での黄金律がここで完成しました。
+</p>
+
+<p>
+<strong>データセット「INRIA Dataset」の提供</strong><br>
+本手法の性能があまりに高すぎたため、当時主流だったMITの歩行者データベースでは「ほぼ正解率100%（完璧な分離）」を達成してしまいました。<br>
+そこで著者らは、より複雑な姿勢や多様な背景、ノイズを含む「INRIA Person Dataset（INRIAデータセット）」を自ら作成して公開しました
+</p>
+
+<h4 style="padding-left:1em">DPM: Deformable Parts Model (2008)</h4>
+<p>
+● 『A Discriminatively Trained, Multiscale, Deformable Part Model
+』 (2008)
+</p>
+
+<p>
+「ディープラーニング以前（古典的機械学習手法）の最高到達点」かつ「最高峰の金字塔」として位置づけられる極めて重要な論文です。<br>
+のちにコンピュータビジョンの最高栄誉の一つである「CVPR Longuet-Higgins Prize (2018年)」を受賞しています。
+</p>
+
+<p>
+<strong>姿勢変化や変形への強力なアプローチ（変形可能パーツモデル）</strong><br>
+従来の物体検出（[Dalal & TriggsのHOG特徴量など）は、物体を「固まった一つの四角形」として捉えるため、人が腕を曲げたり歩いたりするような<strong><span style="color:magenta;">「姿勢の変化や変形」</span></strong>に対応するのが苦手でした。DPMは、<strong><span style="color:magenta;">物体全体を捉える粗いフィルタ（Root Filter）と、各部位を詳細に捉える高解像度なパーツフィルタ（Part Filter）を組み合わせ、さらにそれらの「相対的な位置のズレ（変形コスト）」を数理モデル化</span></strong>（スプリングのような制約）することで解決しました。
+</p>
+
+<p>
+<strong>潜在変数（Latent Variables）を取り入れたSVMの導入</strong><br>
+パーツごとのアノテーション（「ここが手」「ここが足」というラベル付け）を人間が手動で行うのは膨大なコストがかかります。DPMでは <strong><span style="color:magenta;">Latent SVM（潜在SVM） を用いる</span></strong>ことで、物体の外形（Bounding Box）のデータさえ与えれば、<strong><span style="color:magenta;">「パーツの最適な分割位置」を学習の過程で自動的に推定（潜在変数として処理）できる</span></strong>ようにしました。
+</p>
+
+<p>
+<strong>ハードネガティブマイニング（Hard Negative Mining）の定式化</strong><br>
+画像認識において、背景（負例）のパターンは無限に存在します。DPMでは、誤検知しやすい「紛らわしい背景（ハードネガティブ）」を効率的に収集してモデルを鍛え直すデータマイニング手法を最適化に組み込み、限られたメモリで高精度な識別器を作ることに成功しました。
+</p>
+
+<p>
+<strong>圧倒的な精度の向上</strong><br>
+当時の難関ベンチマークであった「PASCAL VOC」において、これまでの手法に比べて平均精度（AP）を約2倍に引き上げるなど、当時の世界最高精度（State-of-the-art）を塗り替え、数年間にわたり王座に君臨しました。
+</p>
+
+<p>
+<strong>CNNとの親和性と直系の系譜</strong><br>
+著者の一人であるRoss Girshick氏は、のちにディープラーニングを用いた物体検出の先駆けとなる「R-CNN」を開発する人物です。実は、DPMの「特徴量を抽出して」「フィルタをかけ」「ズレを許容して統合する」というプロセスは、現在の畳み込みニューラルネットワーク（CNN）の構造と理論的に非常によく似ています（のちに「DPMはCNNの一種として定式化できる」という論文も本著者らから発表されています）。
+</p>
+
+<p>
+現在の物体検出（YOLOやTransformer系の[Deformable DETRなど）でも使われている、「物体をいくつかのコンポーネントやアスペクト比に分けて捉える」という思想や「データマイニングによる学習の効率化」のルーツは、このDPMに深く刻まれています。
+</p>
+
+<h4 style="padding-left:1em">ICF: Integral Channel Features (2009)</h4>
+
+<p>
+● 『Integral Channel Features』 (2009)<br>
+　　<a href="https://en.wikipedia.org/wiki/Integral_channel_feature">Integral channel feature - Wikipedia</a>
+</p>
+
+<p>
+DPMが「複雑な数理モデル（構造・変形）で精度を極める方向」の頂点だったのに対し、このICFは<strong><span style="color:magenta;">「多様な特徴量を効率的に統合し、圧倒的な計算速度と高い精度を両立する方向」</span></strong>の頂点に位置づけられます。
+</p>
+
+<p>
+<strong>「顔検出の王道」と「HOG」の融合・超拡張</strong><br>
+2001年に登場した「Viola-Jones法（カスケード分類器＋Haar-like特徴量＋積分画像による高速化）」は Integral Channel Featuresによる歩行者認識、顔検出を爆速にしましたが、複雑な歩行者検出には表現力が足りませんでした。ICFは、その「積分画像（Integral Image）を使って矩形領域の合計を高速に計算する」というアイデアを、輝度だけでなく「カラー（LUV領域）」「勾配の強度」「HOGのような勾配方向ヒストグラム」など、複数の異なる画像チャンネル（Channel）へ一挙に拡張しました。
+</p>
+
+<p>
+<strong>ヘテロ（異質）な情報の超高速な処理</strong><br>
+色、エッジ、テクスチャといった全く異なる性質の情報を、あらかじめ複数チャンネルの「積分画像」にしておくことで、どんなサイズや位置の矩形特徴量（領域内の和や差）も、わずか数回のメモリバンプ（定数時間 O(1)）で超高速に抽出できるようになりました。
+</p>
+
+<p>
+<strong>Boosting（AdaBoost）による自動特徴選択</strong><br>
+異質なチャンネルから生成される膨大な数の特徴量候補の中から、機械学習アルゴリズム（AdaBoost）を用いて「本当に識別に役立つ有効な特徴量」だけを自動的に選択・カスケード化しました。これにより、不要な計算をカットし処理を劇的に高速化させました。
+</p>
+
+<p>
+<strong>歩行者検出ベンチマークでの圧倒的成果</strong><br>
+当時の主要な評価データセット（INRIAやCaltech Pedestrian Dataset）において、それまでの標準だったHOGを精度・速度とも大きく凌駕し、当時の最高性能（State-of-the-art）へと躍り出ました。
+</p>
+
+<p>
+• DPMがモデルの構造を複雑（パーツのズレの計算など）にして精度を求めたのに対し、ICFは<strong><span style="color:magenta;">「複雑な探索はせず、強力な多次元特徴量を効率的に畳み込む（積分画像）」ことで処理を簡潔に保ちました。</span></strong>そのため、車載カメラや監視カメラなどのリソースが限られた「リアルタイムな実用システム」においては、DPM以上に重宝された技術です。
+
+</p>
+
+<h4 style="padding-left:1em">ACF: Aggregate Channel Features (2014)</h4>
+
+<p>
+● 『Fast Feature Pyramids for Object Detection』 (2014)
+</p>
+
+<p>
+ICF（2009年）の理論を進化させ、のちの物体検出に欠かせない概念となる「特徴量ピラミッド（Feature Pyramids）の超高速化」の文脈の中で、その高速化を具現化する検出器としてACFが提唱されました
+</p>
+
+<p>
+<strong>積分画像すら排除した「ピクセルの集約（Aggregated）」による高速化</strong><br>
+ICFでは、任意の矩形（四角形）の特徴量を高速計算するために「積分画像（Integral Image）」を作っていましたが、それでもメモリバンプの回数や計算負荷がボトルネックになっていました。ACFでは、<strong><span style="color:magenta;">積分画像を作るのをやめ、各チャンネル（色や勾配）のマップ自体を数ピクセル単位で平滑化・ダウンサンプリング（集約：Aggregate）し、そのピクセル値をそのまま特徴量としてベクトル化するアプローチをとりました。</span></strong>これにより、計算工程が極限までシンプルになりました。
+</p>
+
+<p>
+<strong>特徴量ピラミッド（マルチスケール）の計算爆速化</strong><br>
+画像認識において、遠くの小さい物体や近くの大きい物体を捉えるには、画像を様々なサイズに縮小した「画像ピラミッド」を作り、そのすべてで特徴量を計算する必要があり、これが最大の計算負荷でした。本論文の最大のコアは、<strong><span style="color:magenta;">「すべてのスケールで大真面目に特徴量を計算しなくても、1つのスケールで計算した特徴量から、他のスケールの特徴量を数学的に近似（補間）して高速に生成できる」という法則（スケーリング特性）を発見・定式化した</span></strong>点にあります。
+</p>
+
+<p>
+<strong>圧倒的なリアルタイム性の実現</strong><br>
+この特徴量ピラミッドの高速近似とACFのシンプルな構造を組み合わせることで、当時の最高峰の精度を維持したまま、<strong><span style="color:magenta;">一般的なCPU（当時）でも数十FPS〜100FPSを超える圧倒的な超高速検出を可能にしました。</span></strong>
+</p>
+
+<p>
+ACFは「徹底的に無駄を削ぎ落として速度を極めた（軽い）」という対照的な位置づけです。このため、黎明期の車載カメラによる歩行者検知システム、ロボットビジョン、ドローンの制御など、GPUが積めない、あるいは電力が限られたハードウェア環境において、ACFは非常に長く実用され続けました。
+</p>
+
+<p>
+ディープラーニング（CNN）が登場した初期の時代、CNNは精度は高いものの計算が非常に重いという欠点がありました。そこで、「まず超軽量なACFを使って、画像の中から物体がありそうな候補（Region Proposals）を高速に絞り込み、そこだけを重いCNNに処理させる」という、ACF＋CNNのハイブリッド手法が研究され、Faster R-CNNなどの発展にも寄与しました。
+</p>
+
+<p>
+現在のディープラーニング（YOLOなど）でも、異なる解像度の特徴マップを組み合わせてマルチスケールに対応する手法（FPN: Feature Pyramid Networkなど）が標準搭載されています。物体検出において「スケールの変化にどう効率的に対応するか」という課題に対し、本論文が示した「特徴量ピラミッドの効率化」というアプローチは、現代のAIモデルの構造にも大きな影響を与えています。
+</p>
+
+<h4 style="padding-left:1em">Informed Haar (2014)、FCF (CheckerBoards) (2015)</h4>
+
+<p>
+● 『Informed haar-like features improve pedestrian detection』 (2014)<br>
+● 『Filtered channel features for pedestrian detection』 CheckerBoards (2015) 
+</p>
+
+<p>
+ディープラーニング（CNN）が急速に台頭しつつあった2014〜2015年において、「古典的なハンドクラフト特徴量（ICF/ACF）の限界を突破し、CNNに対抗しようとした最後の進化系」として位置づけられます。
+</p>
+
+<p>
+ICFやACFをベースにしながら、弱点であった「解像度や表現力の粗さ」を洗練されたアプローチで克服し、歩行者検出における当時の世界最高精度（State-of-the-art）を塗り替えた重要な意義を持っています。
+</p>
+
+<p>
+<strong>Informed Haar: 「人間の身体構造」という事前知識（Informed）の導入</strong><br>
+ICF/ACFで使われていた矩形（四角形）特徴量は、ランダムまたはグリッド状に配置された「ただの四角」であり、物体の幾何学的な構造を考慮していませんでした。この論文では、歩行者の「頭」「胴体」「足」といった人間の身体のパーツ配置やアスペクト比の統計的な事前知識（Informed）をアルゴリズムに組み込みました。
+</p>
+
+<p>
+<strong>Informed Haar: 特徴量空間の効率化と精度向上</strong><br>
+人間が歩行者の形に合わせて設計・厳選した特徴テンプレート（Informed Haar-like）を用いることで、無駄な特徴量を排除し、より識別能力の高い強力な特徴を効率的に学習（AdaBoost）させました。これにより、従来のACFなどのランダムな特徴抽出に比べて、特にオクルージョン（物体の重なり）や背景のノイズに対する耐性が大幅に向上しました。
+
+</p>
+
+<p>
+<strong>Informed Haar: <span style="color:magenta;">「パーツベースの思想」と「高速チャネル特徴量」の融合</span></strong><br>
+DPM（変形パーツモデル）が持っていた「人間の構造を捉える」という強みと、ICF/ACFの「高速に処理する」という強みをスマートに合体させた位置づけです。CNNが台頭する直前の歩行者検出ベンチマーク（Caltech Pedestrianなど）において、非ディープラーニング手法の中でトップクラスの性能を叩き出しました。
+
+</p>
+
+<p>
+<strong>FCF(CheckerBoards): 「手動設計（ハンドクラフト）」と「CNN」の境界線を無くしたフィルタリング</strong><br>
+前作のACFは、チャネル（色や勾配）のピクセル値をただ「四角く平均化（集約）」するだけの粗い手法でした。この論文（通称：FCF）は、「単なる平均化ではなく、チャネル画像に対して様々な『フィルタ（畳み込みカーネル）』をかけることで、より高度な特徴を抽出できる」という点に着目しました。ガウシアンフィルタや、さまざまなエッジ検出フィルタなどをチャネルに適用し、特徴量の表現力を一気に引き上げました。
+</p>
+
+<p>
+<strong>FCF(CheckerBoards): 古典的手法の「究極進化系」であり「CNNへの完全な降伏点」</strong><br>
+「入力画像から複数のチャネルを作り、そこに複数のフィルタ（カーネル）を掛け合わせて特徴を抽出する」という<strong><span style="color:magenta;">FCFの構造は、数理的に「CNNの第1層・第2層の畳み込み層」と完全に一致しています。</span></strong>違いは、フィルタの数値を「人間が設計（FCF）」したか、「データから自動学習（CNN）」させたかだけです。
+<br><br>
+本論文は、ハンドクラフト特徴量が理論的に洗練された結果、皮肉にも「CNNの構造がいかに正しいか」を証明する形となり、古典的手法の歴史を締めくくる金字塔（かつ最後の抵抗）となりました。実際に、<strong><span style="color:magenta;">このFCFの直後から、歩行者検出のベンチマークは完全にCNN一色へと塗り替えられていくことになります。</span></strong>
+</p>
+
+    </body>
+</html>
