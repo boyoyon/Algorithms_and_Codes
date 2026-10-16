@@ -70,6 +70,7 @@ Lecture notes with working Python code
 <h2>N</h2>
 <h2>O</h2>
 <h2>P</h2>
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_pedestrian_detection/task_pedestrian_detection.html">(タスク) Pedestrian Detection (歩行者検出)</a></br>
 <h2>Q</h2>
 <h2>R</h2>
 <h2>S</h2>
