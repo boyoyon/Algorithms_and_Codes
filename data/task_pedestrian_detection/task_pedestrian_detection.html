@@ -92,7 +92,8 @@
 
 <center><img src="images/methods.svg"></center>
 
-　以下は、AIモードの受け売り
+以下は、AIモードの受け売り
+<h3>手作り特徴量＋機械学習</h3>
 
 <h4 style="padding-left:1em">Haar-like特徴量＋多項式カーネルSVM (1997)</h4>
 <p>
@@ -351,6 +352,32 @@ DPM（変形パーツモデル）が持っていた「人間の構造を捉え�
 「入力画像から複数のチャネルを作り、そこに複数のフィルタ（カーネル）を掛け合わせて特徴を抽出する」という<strong><span style="color:magenta;">FCFの構造は、数理的に「CNNの第1層・第2層の畳み込み層」と完全に一致しています。</span></strong>違いは、フィルタの数値を「人間が設計（FCF）」したか、「データから自動学習（CNN）」させたかだけです。
 <br><br>
 本論文は、ハンドクラフト特徴量が理論的に洗練された結果、皮肉にも「CNNの構造がいかに正しいか」を証明する形となり、古典的手法の歴史を締めくくる金字塔（かつ最後の抵抗）となりました。実際に、<strong><span style="color:magenta;">このFCFの直後から、歩行者検出のベンチマークは完全にCNN一色へと塗り替えられていくことになります。</span></strong>
+</p>
+
+<br>
+
+<h3>End-to-End 機械学習 (Deep Learning) ・・・ 作成中</h3>
+<h4 style="padding-left:1em;">Deep Pyramid DPM (2014)</h4>
+<p>
+● 『<a href="https://arxiv.org/abs/1409.5403">Deformable Part Models are Convolutional Neural Networks</a>』 (arxiv 2014, CVPR 2015)
+</p>
+
+<p>
+</p>
+
+<p>
+<strong>等価性の証明</strong><br>
+従来の物体検出モデルである DPM（Deformable Part Models）の推論アルゴリズムのループをほどき（unrolling）、各ステップを等価な CNN（畳み込みニューラルネットワーク）のレイヤーに対応づけることで、<strong><span style="color:magenta;">DPMがCNNの一種として表現できることを示しました。</span></strong>
+</p>
+
+<p>
+<strong>DeepPyramid DPM</strong><br>
+従来のHOG（Histogram of Oriented Gradients）特徴量の代わりに、学習済みのCNN特徴量抽出器を組み込んだモデルを提案しました。
+</p>
+
+<p>
+<strong>パフォーマンス</strong><br>
+PASCAL VOCデータセットでの評価において、<strong><span style="color:magenta;">従来のHOGベースのDPMを大きく上回り、R-CNNシステムに匹敵する精度を、1桁速い速度で実現しました。</span></strong>
 </p>
 
     </body>
