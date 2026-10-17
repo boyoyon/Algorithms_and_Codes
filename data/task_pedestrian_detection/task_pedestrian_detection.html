@@ -358,7 +358,8 @@ DPM（変形パーツモデル）が持っていた「人間の構造を捉え�
 
 <h3>End-to-End 機械学習 (Deep Learning) </h3>
 
-<h4 style="padding-left:1em;">R-CNN (2014)</h4>
+<h4 style="padding-left:1em;">R-CNN シリーズ</h4>
+<h4 style="padding-left:1em;">　R-CNN (2014)</h4>
 <p>
 ● 『Rich feature hierarchies for accurate object detection and semantic segmentation』 (CVPR2014)
 </p>
@@ -377,27 +378,7 @@ DPM（変形パーツモデル）が持っていた「人間の構造を捉え�
 </li></ul></div>
 </p>
 
-<h4 style="padding-left:1em;">Deep Pyramid DPM (2014)</h4>
-<p>
-● 『<a href="https://arxiv.org/abs/1409.5403">Deformable Part Models are Convolutional Neural Networks</a>』 (arxiv 2014, CVPR 2015)
-</p>
-
-<p>
-<strong>等価性の証明</strong><br>
-従来の物体検出モデルである DPM（Deformable Part Models）の推論アルゴリズムのループをほどき（unrolling）、各ステップを等価な CNN（畳み込みニューラルネットワーク）のレイヤーに対応づけることで、<strong><span style="color:magenta;">DPMがCNNの一種として表現できることを示しました。</span></strong>
-</p>
-
-<p>
-<strong>DeepPyramid DPM</strong><br>
-従来のHOG（Histogram of Oriented Gradients）特徴量の代わりに、学習済みのCNN特徴量抽出器を組み込んだモデルを提案しました。
-</p>
-
-<p>
-<strong>パフォーマンス</strong><br>
-PASCAL VOCデータセットでの評価において、<strong><span style="color:magenta;">従来のHOGベースのDPMを大きく上回り、R-CNNシステムに匹敵する精度を、1桁速い速度で実現しました。</span></strong>
-</p>
-
-<h4 style="padding-left:1em;">Fast R-CNN (2015)</h4>
+<h4 style="padding-left:1em;">　Fast R-CNN (2015)</h4>
 
 <p>
 ● 『Fast R-CNN』 (2015)
@@ -421,7 +402,7 @@ PASCAL VOCデータセットでの評価において、<strong><span style="colo
  歩行者が「どこにいるか」の候補を探す最初の処理<strong><span style="color:magenta;">（Selective Search）はまだCPUで外部処理していた</span></strong>ため、そこがボトルネックとなり完全なリアルタイム化には届きませんでした。
 </p>
 
-<h4 style="padding-left:1em;">Faster R-CNN (2015)</h4>
+<h4 style="padding-left:1em;">　Faster R-CNN (2015)</h4>
 
 <p>
 ● 『Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks』 (NIPS2015)
@@ -431,7 +412,7 @@ PASCAL VOCデータセットでの評価において、<strong><span style="colo
 <strong><span style="color:magenta;">歩行者の候補領域を検出する「RPN (Region Proposal Network)」をネットワーク内部に組み込みました。</span></strong>これによってすべての処理がGPU上で完結し、劇的な高速化を達成しました。さらに、歩行者のような縦長の物体に適した「アンカーボックス」の概念が導入されたことで、遠くにいる小さな歩行者や、体の一部が隠れている（オクルージョン）歩行者でも極めて高い精度でリアルタイムに検出可能になりました。自動運転技術などの基盤となっています。
 </p>
 
-<h4 style="padding-left:1em;">Mask R-CNN (2017)</h4>
+<h4 style="padding-left:1em;">　Mask R-CNN (2017)</h4>
 
 <p>
 ● 『Mask R-CNN』 (ICC2017)
@@ -445,7 +426,56 @@ Faster R-CNNをベースに、歩行者をピクセル単位の正確な形（�
 単に「ここに人がいる（四角い枠）」だけでなく、<strong><span style="color:magenta;">「その歩行者がどの向きに、どんな姿勢で、どこまで体があるか」を正確に把握できるようになりました。</span></strong>これにより、車道に足を踏み出しそうな歩行者の「細かな挙動の予測」や、道路上の白線・障害物と歩行者の「正確な境界線」を識別することが可能になり、安全性向上のために不可欠な技術という位置づけになりました。
 </p>
 
+<h4 style="padding-left:1em;">Deep Pyramid DPM (2014)</h4>
 <p>
+● 『<a href="https://arxiv.org/abs/1409.5403">Deformable Part Models are Convolutional Neural Networks</a>』 (arxiv 2014, CVPR 2015)
+</p>
+
+<p>
+<strong>等価性の証明</strong><br>
+従来の物体検出モデルである DPM（Deformable Part Models）の推論アルゴリズムのループをほどき（unrolling）、各ステップを等価な CNN（畳み込みニューラルネットワーク）のレイヤーに対応づけることで、<strong><span style="color:magenta;">DPMがCNNの一種として表現できることを示しました。</span></strong>
+</p>
+
+<p>
+<strong>DeepPyramid DPM</strong><br>
+従来のHOG（Histogram of Oriented Gradients）特徴量の代わりに、学習済みのCNN特徴量抽出器を組み込んだモデルを提案しました。
+</p>
+
+<p>
+<strong>パフォーマンス</strong><br>
+PASCAL VOCデータセットでの評価において、<strong><span style="color:magenta;">従来のHOGベースのDPMを大きく上回り、R-CNNシステムに匹敵する精度を、1桁速い速度で実現しました。</span></strong>
+</p>
+
+<h4 style="padding-left:1em;">YOLO（You Only Look Once）シリーズ</h4>
+<p>
+●『You Only Look Once: Unified, Real-Time Object Detection』 (CVPR2016)
+</p>
+
+<p>
+Faster R-CNNなどの「2段階検出（Two-stage）」が『候補探し ➔ 分類』と2回ステップを踏むのに対し、<strong><span style="color:magenta;">YOLOシリーズとこの後のSSDシリーズは「画像を一回見るだけで（Single Shot）、位置も種類も同時に予測する」というアプローチを取ります。</span></strong>
+</p>
+
+<p>
+画像を縦横の格子（グリッドセル）に分割し、各セルが「そこにある物体の枠（バウンディングボックス）」と「確率」を同時に一発で予測します。これにより、動画のフレームレート（FPS）を落とさずに歩行者を追跡できるようになりました。画像全体を一度に見るため、背景の誤検出（背景のシミを人間と見間違えるなど）が非常に少ない点も優秀です。
+</p>
+
+<p>
+初期（v1〜v2）は「小さな物体」や「密集した歩行者」の検出が苦手でした。しかし、YOLOv3以降や近年の最新版（v8など）では、異なる大きさの特徴を捉える技術（FPN等）を取り入れ、遠くにいる小さな歩行者も高精度で捉えられるよう進化し続けています。
+</p>
+
+
+<h4 style="padding-left:1em;">SSD（Single Shot MultiBox Detector）シリーズ</h4>
+<p>
+● 『SSD: Single Shot MultiBox Detector』 (ECCV2016)
+</p>
+
+<p>
+YOLOv1の最大の弱点であった「小さい物体の検出漏れ」を、「マルチスケール特徴マップ」というアイデアで解決しました。
+ネットワークの中間層（浅い層＝細かい模様が見える）からは遠くの小さな歩行者を検出し、深い層（全体が見える）からは近くの大きな歩行者を検出します。これにあらかじめ様々な比率の枠（デフォルトボックス）を組み合わせることで、1段階検出の手軽さを維持したまま、歩行者検出の精度を劇的に向上させました。
+</p>
+
+<p>
+初期のYOLOに比べて「実装がシンプルで、様々なサイズが混在する物体に対して安定して強い」ため、産業用ロボットやエッジデバイス（小型カメラなど）への組み込みモデルとして長らく王座に君臨しました。
 </p>
     </body>
 </html>
