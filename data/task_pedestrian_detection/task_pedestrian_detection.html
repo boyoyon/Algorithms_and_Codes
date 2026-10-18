@@ -197,6 +197,29 @@ AdaBoostによる高速な処理能力を活かし、解像度がわずか 20×1
 そこで著者らは、より複雑な姿勢や多様な背景、ノイズを含む「INRIA Person Dataset（INRIAデータセット）」を自ら作成して公開しました
 </p>
 
+<p>
+<strong>お試しコード</strong><br>
+(data/task_pedestrian_detection/src/detector_by_hog_and_svm.py)
+<br><br>
+　(コード断片)
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+# HOG検出器の初期化（人間検出用の学習済みモデルをロード）
+hog = cv2.HOGDescriptor()
+hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+
+# 画像の読み込み
+image = cv2.imread(argv[1])
+
+# 物体検出の実行
+boxes, weights = hog.detectMultiScale(image, winStride=(8, 8), padding=(8, 8), scale=1.05)
+</code>
+</pre>
+
+<center><img src="images/hog_svm.png"></center>
+
 <h4 style="padding-left:1em">DPM: Deformable Parts Model (2008)</h4>
 <p>
 ● 『A Discriminatively Trained, Multiscale, Deformable Part Model
@@ -463,6 +486,43 @@ Faster R-CNNなどの「2段階検出（Two-stage）」が『候補探し ➔ �
 初期（v1〜v2）は「小さな物体」や「密集した歩行者」の検出が苦手でした。しかし、YOLOv3以降や近年の最新版（v8など）では、異なる大きさの特徴を捉える技術（FPN等）を取り入れ、遠くにいる小さな歩行者も高精度で捉えられるよう進化し続けています。
 </p>
 
+<p>
+<strong>お試しコード</strong><br>
+(data/task_pedestrian_detection/src/)<br>
+(data/task_pedestrian_detection/src/)<br>
+<br>
+pip　install　opencv-python　numpy　ultralytics<br>
+<br>
+YOLOv8 を ONNX 形式に変換する (一回だけ実施)<br>
+python export_yolo.py<br>
+<br>
+python　detector_by_yolov8.py　(画像ファイル)<br>
+<br>
+(コード断片)
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+# --- 2. モデルの読み込み ---
+# 書き出したONNXファイルをOpenCV DNNにロード
+net = cv2.dnn.readNetFromONNX("yolov8n.onnx")
+
+# --- 3. 画像の読み込みと前処理 ---
+image = cv2.imread(argv[1])
+
+# YOLOv8に入力するために画像を640x640のBlob（数値配列）に変換
+# 1/255.0でピクセル値を0〜1に正規化
+blob = cv2.dnn.blobFromImage(image, 1/255.0, (640, 640), swapRB=True, crop=False)
+net.setInput(blob)
+
+# --- 4. 予測（推論）の実行 ---
+# ネットワークに画像を流して出力を得る
+outputs = net.forward()
+
+</code>
+</pre>
+
+<center><img src="images/yolov8.png"></center>
 
 <h4 style="padding-left:1em;">SSD（Single Shot MultiBox Detector）シリーズ</h4>
 <p>
