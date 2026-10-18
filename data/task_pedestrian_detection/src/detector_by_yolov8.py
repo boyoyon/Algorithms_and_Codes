@@ -31,7 +31,9 @@ COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
 
 # --- 2. モデルの読み込み ---
 # 先ほど書き出したONNXファイルをOpenCV DNNにロード
-net = cv2.dnn.readNetFromONNX("yolov8n.onnx")
+
+
+net = cv2.dnn.readNetFromONNX(os.path.join(os.path.dirname(__file__), 'yolov8n.onnx'))
 
 # --- 3. 画像の読み込みと前処理 ---
 image = cv2.imread(argv[1])
