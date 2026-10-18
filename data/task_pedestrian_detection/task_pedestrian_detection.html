@@ -198,6 +198,14 @@ AdaBoostによる高速な処理能力を活かし、解像度がわずか 20×1
 </p>
 
 <p>
+(蛇足)<br>
+　Orientation Histogramの源流を少し辿ってみた。<br>
+・『Orientation histograms for hand gesture recognition』 (1995)<br>
+　データグローブのハンドジェスチャー認識用に提案された。<br>
+・『Method of and Apparatus for Pattern Recognition（パターン認識のための方法および装置）』 (1986 特許)
+</p>
+
+<p>
 <strong>お試しコード</strong><br>
 (data/task_pedestrian_detection/src/detector_by_hog_and_svm.py)
 <br><br>
@@ -217,6 +225,10 @@ image = cv2.imread(argv[1])
 boxes, weights = hog.detectMultiScale(image, winStride=(8, 8), padding=(8, 8), scale=1.05)
 </code>
 </pre>
+
+<p>
+(実行結果)
+</p>
 
 <center><img src="images/hog_svm.png"></center>
 
@@ -285,6 +297,10 @@ DPMが「複雑な数理モデル（構造・変形）で精度を極める方�
 <strong>Boosting（AdaBoost）による自動特徴選択</strong><br>
 異質なチャンネルから生成される膨大な数の特徴量候補の中から、機械学習アルゴリズム（AdaBoost）を用いて「本当に識別に役立つ有効な特徴量」だけを自動的に選択・カスケード化しました。これにより、不要な計算をカットし処理を劇的に高速化させました。
 </p>
+
+<center><img src="images/feature_error.svg"></center>
+<center>横軸：検出器の使用する特徴量の数、縦軸：検出エラー率</center>
+<center>緑：訓練データに対する検出エラー率、黄色：テストデータに対する検出エラー率</center>
 
 <p>
 <strong>歩行者検出ベンチマークでの圧倒的成果</strong><br>
@@ -523,6 +539,10 @@ outputs = net.forward()
 </code>
 </pre>
 
+<p>
+(実行結果)
+</p>
+
 <center><img src="images/yolov8.png"></center>
 
 <h4 style="padding-left:1em;">SSD（Single Shot MultiBox Detector）シリーズ</h4>
@@ -538,5 +558,54 @@ YOLOv1の最大の弱点であった「小さい物体の検出漏れ」を、�
 <p>
 初期のYOLOに比べて「実装がシンプルで、様々なサイズが混在する物体に対して安定して強い」ため、産業用ロボットやエッジデバイス（小型カメラなど）への組み込みモデルとして長らく王座に君臨しました。
 </p>
+
+<p>
+<strong>お試しコード</strong><br>
+(data/task_pedestrian_detection/src/detector_by_ssd.py)<br>
+<br>
+モデルの構造定義ファイル (MobileNetSSD_deploy.prototxt)をダウンロードし、ソースと同じフォルダに置く (一回だけ実施)<br>
+https://github.com/chuanqi305/MobileNet-SSD/blob/master/voc/MobileNetSSD_deploy.prototxt
+<br><br>
+
+学習済み重みファイル (MobileNetSSD_deploy.caffemodel) をダウンロードし、ソースと同じフォルダに置く (一回だけ実施)<br>
+https://github.com/PINTO0309/MobileNet-SSD-RealSense/blob/master/caffemodel/MobileNetSSD/MobileNetSSD_deploy.caffemodel
+<br><br>
+python　detector_by_ssd.py　(画像ファイル)
+<br><br>
+(コード断片)
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+# 1. モデルと設定ファイルの読み込み
+prototxt_path = os.path.join(os.path.dirname(__file__), 'MobileNetSSD_deploy.prototxt')
+model_path = os.path.join(os.path.dirname(__file__), 'MobileNetSSD_deploy.caffemodel')
+net = cv2.dnn.readNetFromCaffe(prototxt_path, model_path)
+
+# MobileNet-SSDが学習している21個のクラス定義
+CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
+           "bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
+           "dog", "horse", "motorbike", "person", "pottedplant", "sheep",
+           "sofa", "train", "tvmonitor"]
+
+# 2. テスト画像の読み込み
+image = cv2.imread(argv[1])
+(h, w) = image.shape[:2]
+
+# 3. 画像をSSDの入力サイズ（300x300、平均値差し引き）に変換してモデルにセット
+blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 0.007843, (300, 300), 127.5)
+net.setInput(blob)
+
+# 4. 推論の実行
+detections = net.forward()
+</code>
+</pre>
+
+<p>
+(実行結果)
+</p>
+
+<center><img src="images/ssd.png"></center>
+
     </body>
 </html>
