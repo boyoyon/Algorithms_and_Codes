@@ -78,6 +78,7 @@ Lecture notes with working Python code
 <h2>U</h2>
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/unsharp_masking/unsharp_masking_retinex.html">unsharp masking (アンシャープマスキング)</a><br>
 <h2>V</h2>
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_video_magnification/task_video_magnification.html">(タスク) Video Magnification</a><br>
 <h2>W</h2>
 <h2>X</h2>
 <h2>Y</h2>
