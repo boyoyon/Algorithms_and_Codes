@@ -125,7 +125,7 @@
 
 <p>
 \[
-\text{腕 }i\text{ を選ぶ確率}=\frac{\exp\Big(\frac{\text{腕 }i\text{ の平均報酬}}{τ}\Big)}{\sum_{j=1}^K \exp\Big(\frac{\text{腕 }j\text{ の平均報酬}}{τ}\Big)}
+\text{腕 }i\text{ を選ぶ確率}=\frac{\exp\Big(\frac{\text{腕 }i\text{ の平均報酬}}{τ}\Big)}{\sum_{j=1}^K \exp\Big(\frac{\text{腕 }j\text{ の平均報酬}}{τ}\Big)} \quad τ\text{ は温度パラメータ}
 \]
 </p>
 
@@ -211,7 +211,7 @@
 トンプソンサンプリングをコンテキスト添え付きバンディット（線形モデル）に応用したもの。
 </p>
 
-<h3 style="padding-left:1em;">4. 敵対的環境・非静的な系譜 (Exp系列) (Thompson Sampling)</h3>
+<h3 style="padding-left:1em;">4. 敵対的環境・非静的な系譜 (Exp系列)</h3>
 
 <p>
 これまでの手法が「報酬の確率分布が一定（静的）」であることを前提としているのに対し、<strong><span style="color:magenta;">環境が時間の経過やプレイヤーの行動に応じて悪意を持って変化する（敵対的環境）ことを想定した系譜</span></strong>です。
