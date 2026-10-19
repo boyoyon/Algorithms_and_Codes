@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>Video Magnification</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 20px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0 25%; /* 幅を25%に設定して4列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+</head>
+<body>
+
+<h1><center>(タスク) Video Magnification</center></h1>
+
+<h2>なにものか?</h2>
+<p>
+動画内の、肉眼では捉えられないほどの微小な動き（振動や変形）や色の変化を、コンピューターによる画像処理で拡大し、目に見える形にする技術。
+</p>
+
+<p>
+例えば、「人間の顔の血流によるわずかな赤みの変化（心拍）」 や、「橋や建造物が風でわずかに揺れる様子」 などを、特別な高精度カメラではなく、一般的なカメラの映像から浮かび上がらせることができます
+</p>
+
+<center><img src="images/evm.png"></center>
+
+<p style="padding-left:4em;">
+オイラービデオ拡大フレームワークを用いて人間の脈拍を可視化した例。(a) 元のビデオシーケンス（顔）の4フレーム。(b) 同じ4フレームで被験者の脈拍信号を増幅したもの。(c) 入力ビデオ（上）と出力ビデオ（下）の垂直走査線を時間経過に沿ってプロットしたもの。周期的な色の変化が増幅される様子を示している。入力シーケンスでは信号は目立たないが、拡大されたシーケンスでは変化が明瞭に確認できる。
+</p>
+
+<h3>手法</h3>
+
+<p>
+この技術の歴史は、大きく分けて「ラグランジュ的（Lagrangian）」と「オイラー的（Eulerian）」という2つのアプローチに分類されます。
+</p>
+
+<h4 style="padding-left:1em;">初期の源流：ラグランジュ的アプローチ（特徴点追跡）</h4>
+
+<p>
+物体の<strong><span style="color:magenta;">特定の「点（ピクセル）」や特徴的な輪郭を直接追跡（トラッキング）し、その移動軌跡を計算して引き伸ばす</span></strong>手法です。流体力学における「個々の粒子の動きを追う（ラグランジュ的）」考え方に似ています。
+</p>
+
+<p>
+非常に複雑な動きの計算が必要で、物体の境界でノイズや不自然な歪みが生じやすく、処理に膨大な時間がかかりました。
+</p>
+
+<p>
+● 『<a href="https://dl.acm.org/doi/pdf/10.1145/1073204.1073223">Motion Magnification</a>』（2005）
+</p>
+
+<p style="padding-left:4em;">
+<strong><span style="color:magenta;">世界で初めて「映像の中の目に見えない動きを拡大する」という概念を提唱した</span></strong>ラグランジュ的アプローチの金字塔です。物体の動きのレイヤー分解やテクスチャ合成を用い、静止画では見えない構造の歪みなどを可視化しました。
+</p>
+
+<h4 style="padding-left:1em;">現代の主流：オイラー的アプローチ（画素内の変化に着目）</h4>
+
+<p>
+ <strong><span style="color:magenta;">物体を追跡するのではなく、固定された「画素（ピクセル）そのもの」の輝度や色の時間的変化（信号）に着目し、その変動成分だけをフィルターで抽出して増幅する</span></strong>手法です。流体力学における「固定された空間の1点を見る（オイラー的）」考え方に由来します。
+</p>
+
+<p>
+計算が極めてシンプルかつ高速で、境界線のバグが出にくく、リアルタイム処理が可能になりました。
+</p>
+
+<p>
+● 『<a href="https://dl.acm.org/doi/pdf/10.1145/2185520.2185561">Eulerian Video Magnification for Revealing Subtle Changes in the World</a>』 （SIGGRAPH 2012）<br>
+　　機械翻訳は <a href="https://boyoyon.github.io/HTMLs_translated_to_Japanese/2012_VideoMagnification/2012_Eulerian%20Video%20Magnification%20for%20Revealing%20Subtle%20Changes%20in%20the%20World.html">こちら</a>
+</p>
+
+<p style="padding-left:4em;">
+現在のビデオ増幅技術のベースとなっている最も画期的な論文
+</p>
+
+<p style="padding-left:4em;">
+映像を空間的（ラプラシアンピラミッド）に分解し、時間軸方向のバンドパスフィルターを通すだけで、 <strong><span style="color:magenta;">「特徴点を1つも追跡することなく」人間の心拍による顔色の変化や、呼吸による赤ちゃんの胸の微小な動きを、標準的な動画からリアルタイムに可視化してみせました。</span></strong>
+</p>
+
+<p>
+● 『<a href="https://people.csail.mit.edu/nwadhwa/phase-video/phase-video.pdf">Phase-Based Video Motion Processing</a>』 (2013)
+</p>
+
+<p style="padding-left:4em;">
+ 2012年の線形手法で発生しやすかったノイズを抑えるため、画像の「位相情報」を使って動きを滑らかに大きくする手法が開発されました。
+</p>
+
+<p style="padding-left:4em;">
+Phase Video の PyTorch 実装が公開されている。<br>
+<br>
+(環境構築手順)<br>
+・<a href="https://github.com/itberrios/phase_based/tree/main">https://github.com/itberrios/phase_based/tree/main</a><br>
+　Code → Download ZIP<br>
+・phase_based-main.zip を解凍する<br>
+・cd phase_based-main<br>
+・PyTorchをインストールする<br>
+　<a href="https://pytorch.org/">PyTorch</a><br>
+　(手持ちGPUの都合により) PyTorch 1.13で試した。<br>
+・pip install opencv-python<br>
+　PyTorch 1.13の場合、numpyのversionが合わなくなったので<br>
+　pip install numpy==1.26 に戻した。<br>
+・pip install scipy<br>
+・pip install matplotlib<br>
+</p>
+
+<p style="padding-left:4em;">
+(実行方法)<br>
+<br>
+　10秒程度の動画の処理時間<br>
+　　CPU：数分～10分<br>
+　　GPU：数十秒<br>
+　くらい掛かる。<br>
+<br>
+　motion_magnification.py を書き換える。<br>
+　ギターの場合：変更箇所は--video_pathの行のみ
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+if __name__ == '__main__':
+    args = vars(ap.parse_args(
+        ["--video_path",       "guitar.mp4",  # ここで動画ファイルを指定
+         "--phase_mag",        "25.0", # "25.0", 
+         "--freq_lo",          "72", # "30", # "0.20", 
+         "--freq_hi",          "92", # "50", # "0.25", 
+         "--colorspace",       "luma3",
+         "--pyramid_type",     "half_octave",
+         "--sigma",            "2.0", # "5.0"
+         "--attenuate",        "True", # "False",
+         "--sample_frequency", "600", # "500", # "-1.0", # This is generally not needed
+         "--reference_index",  "0",
+         "--scale_factor",     "0.75", # "1.0"
+         "--batch_size",       "82", #"8",
+         "--save_directory",   "",
+         "--save_gif",         "True"
+         ]))
+</code>
+</pre>
+
+<p style="padding-left:4em;">
+・クレーン動画の場合<br>
+　ギター用の args 文をコメントアウト<br>
+　クレーン用のargs分の#を削除<br>
+　--video_path の行でクレーン動画のパスを指定<br>
+</p>
+
+<pre>
+<code style="padding-left:4em;">
+if __name__ == '__main__':
+    args = vars(ap.parse_args(
+         ["--video_path",       "crane.mp4", # ここで動画ファイルを指定
+          "--phase_mag",        "25.0", 
+          "--freq_lo",          "0.20", 
+          "--freq_hi",          "0.25", 
+          "--colorspace",       "luma3",
+          "--pyramid_type",     "half_octave",
+          "--sigma",            "5.0",
+          "--attenuate",        "True", # "False",
+          "--sample_frequency", "-1.0", # This is generally not needed
+          "--reference_index",  "0",
+          "--scale_factor",     "1.0",
+          "--batch_size",       "4",
+          "--save_directory",   "",
+          "--save_gif",         "False"
+          ]))
+</code>
+</pre>
+
+<p>
+● 『<a href="https://people.csail.mit.edu/mrub/papers/VisualMic_SIGGRAPH2014.pdf">The Visual Microphone: Passive Recovery of Sound from Video</a>』 (SIGGRAPH 2014)
+</p>
+
+<p style="padding-left:4em;">
+Video Magnificationが「微小な動きを画面上で大きく見せる」技術であるのに対し、Visual Microphoneは「その微小な動き（音波による振動）を音声データに変換して復元する」技術です。
+</p>
+
+<p style="padding-left:4em;">
+2012年にオイラー的アプローチ（EVM）で世界に衝撃を与えたMIT（マサチューセッツ工科大学）のウィリアム・フリーマン（William T. Freeman）教授やマイケル・ルービンシュタイン（Michael Rubinstein）氏らの研究チームが、まさにその2年後に発表したのがこの技術です。
+</p>
+
+<p style="padding-left:4em;">
+音とは「空気の振動」であり、それが室内の物体（ポテトチップスの袋、観葉植物の葉、コップの水など）にぶつかると、物体をごくわずかに（数マイクロメートル、1画素の100分の一以下というレベルで）振動させます。
+<br><br>
+1. 映像のピクセルごとの局所的な「位相（動きの変化）」を計算する。
+
+<br><br>
+
+2. Video Magnificationならこれを「数倍〜数百倍にして画面に描画」しますが、Visual Microphoneではその振動の周波数と振幅のデータをそのまま「音波の信号（オーディオ）」として取り出し、スピーカーから鳴らせる音に変換します。
+</p>
+
+<p>
+● 『<a href="https://arxiv.org/abs/1804.02684">Learning-based Video Motion Magnification</a>』 (2018)
+</p>
+
+<p style="padding-left:4em;">
+現在では、CNN（畳み込みニューラルネットワーク）などの学習モデルを活用し、大きな動き（歩いている人など）が含まれる映像の中から、特定の微小な振動だけをきれいに抽出・拡大する研究（Learning-based Video Motion Magnification）が主流となっています。
+</p>
+
+<p style="padding-left:4em;">
+実装は色々公開されている (動作未確認)<br>
+・<a href="https://github.com/cgst/motion-magnification">Video Motion Magnification</a><br>
+・<a href="https://github.com/ZhengPeng7/motion_magnification_learning-based">Motion_magnification_learning-based</a><br>
+・<a href="https://github.com/12dmodel/deep_motion_mag/">Learning-based Video Motion Magnification</a><br>
+・<a href="https://github.com/kaist-ami/Axial-mm">Learning-based Axial Video Motion Magnification (ECCV 2024)</a><br>
+・<a href="https://github.com/kaist-ami/Fast-MM">Fast-MM: DMM / FastDMM inference</a><br>
+
+</body>
+</html>
