@@ -76,6 +76,7 @@ Lecture notes with working Python code
 <h2>S</h2>
 <h2>T</h2>
 <h2>U</h2>
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/unsharp_masking/unsharp_masking_retinex.html">unsharp masking (アンシャープマスキング)</a><br>
 <h2>V</h2>
 <h2>W</h2>
 <h2>X</h2>
