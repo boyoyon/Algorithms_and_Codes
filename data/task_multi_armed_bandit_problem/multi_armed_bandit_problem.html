@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>Multi-Armed Bandit Problem</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 20px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0 25%; /* 幅を25%に設定して4列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+</head>
+<body>
+
+<h1><center>(タスク) Multi-Armed Bandit Problem <br>　　　(多腕バンディット問題)</center></h1>
+
+<h2>なにものか?</h2>
+<p>
+多腕バンディット問題（Multi-Armed Bandit Problem）とは、確率論や機械学習（強化学習）における古典的な問題の一つで、「限られた試行回数の中で、不確実な複数の選択肢からどのように選べば、得られる報酬（利益）を最大化できるか」を探求する意思決定問題です。
+</p>
+
+<p>
+名前の由来はカジノのスロットマシン（俗称：片腕の盗賊＝One-Armed Bandit）です。「当たり確率がそれぞれ異なる複数のスロットマシン（多腕）を前にしたギャンブラーが、限られた手持ちのコインで最大の利益を得るには、どの台をどの順番で何回引けばよいか」という状況を例にしていることからこの名が付きました。
+</p>
+
+<p>
+この問題の本質は、「探索（Exploration）」と「活用（Exploitation）」のバランス（ジレンマ）にあります。
+</p>
+
+<p>
+<strong>活用（Exploitation）</strong><br>
+これまでに試した中で「一番当たりやすそう」と分かっている実績のある選択肢（アーム）を選び、確実に報酬を狙いに行く行動。
+</p>
+
+<p>
+<strong>探索（Exploration）</strong><br>
+まだデータが少なくて実力が分からない他の選択肢（アーム）をあえて試してみて、より優れた選択肢がないか情報を集めに行く行動。
+</p>
+
+<p>
+(蛇足)<br>
+　外れの無い「いつもの店」にするか、冒険をして「新たな店」を開拓するか
+</p>
+
+<h2>手法</h2>
+
+<h3 style="padding-left:1em;">0. ベースライン</h3>
+
+<h4 style="padding-left:2em;">Greedy (グリーディ) 法</h4>
+
+<p style="padding-left:4em;">
+お試し期間に選んだ台を使い続ける一途な戦略。<br>
+お試し期間の選択が正しければ、一番効率的。<br>
+お試し期間に過大評価、過小評価があっても挽回できない(挽回しようと思わない)
+</p>
+
+<h3 style="padding-left:1em;">1. 統計的・ヒューリスティックな系譜 (シンプルな制御)</h3>
+
+<h4 style="padding-left:2em;">\(\varepsilon \)-Greedy (イプシロン・グリーディ) 法</h4>
+
+<p style="padding-left:4em;">
+一定の確率 \(\varepsilon \) でランダムに探索し、残りの確率 \(1-\varepsilon\) で現時点で最も報酬の高い腕を活用する最もシンプルな手法
+</p>
+
+<p>
+(蛇足)<br>
+　一定の頻度でランダムに浮気し続けるので、最後まで最適値に近づかない・・・
+</p>
+
+<h4 style="padding-left:2em;">\(\varepsilon \)-減衰法</h4>
+
+<p style="padding-left:4em;">
+時間（試行回数）の経過とともに \(\varepsilon \) を小さくし、後半は活用に集中させる手法。
+</p>
+
+<h4 style="padding-left:2em;">Softmax法 (ボルツマン探索)</h4>
+
+<p style="padding-left:4em;">
+各腕の過去の報酬期待値に応じて、確率分布（Softmax関数）を用いて腕を選択する手法。期待値が高い腕ほど選ばれやすくなります。
+</p>
+
+<p>
+\[
+\text{腕 }i\text{ を選ぶ確率}=\frac{\exp\Big(\frac{\text{腕 }i\text{ の平均報酬}}{τ}\Big)}{\sum_{j=1}^K \exp\Big(\frac{\text{腕 }j\text{ の平均報酬}}{τ}\Big)}
+\]
+</p>
+
+<h3 style="padding-left:1em;">2. 楽観的なアプローチの系譜 (UCB系列)</h3>
+
+<p>
+「<strong><span style="color:magenta;">不確実なものほど楽観的に評価する（Optimism in the Face of Uncertainty）</span></strong>」という哲学に基づいた、理論的保証（リグレットの上界）を持つ強力な系譜です。
+</p>
+
+<h4 style="padding-left:2em;">UCB1 (Upper Confidence Bound)</h4>
+
+<p style="padding-left:4em;">
+過去の報酬期待値に「不確実さ（ばらつきや試行回数の少なさ）」を足し合わせたスコア（信頼上限）を計算し、それが最大となる腕を選ぶ手法。
+</p>
+
+<p>
+\[
+\text{腕}_{\text{次回}}=\mathrm{arg}\max\limits_{i}\Bigg(\underbrace{\text{腕 }i\text{ の平均報酬}}_{\text{実績(活用)}}+(\text{最高報酬}-\text{最低報酬})×\underbrace{\sqrt{\frac{2×\ln(\text{これまでの総プレイ回数})}{\text{これまで腕 }i\text{ をプレイした回数}}}}_{\text{伸びしろのある腕を試す(探索)}}\;\Bigg)
+\]
+
+・ 平均報酬が同じ腕なら、実績の少ない(伸びしろがあるかもしれない)腕を選ぶ。<br>
+・ 報酬の最高と最低の差により、活用重視と探索重視の比率を調整している。<br>
+<br>
+(蛇足)<br>
+・伸びしろに期待して実績のない腕を試すので、最適値に近づくのに時間が掛かる。
+</p>
+
+<h4 style="padding-left:2em;">LinUCB</h4>
+
+<p style="padding-left:4em;">
+腕の特徴量（コンテキスト）を考慮できるコンテキスト添え付きバンディット (Contextual Bandit) へ拡張したもの。Web広告のパーソナライズなどに広く使われています。
+</p>
+
+<h4 style="padding-left:2em;">KL-UCB</h4>
+
+<p style="padding-left:4em;">
+報酬の分布がベルヌーイ分布などの場合に、よりタイトな信頼区間（カルバック・ライブラー情報量）を用いて効率化。
+</p>
+
+<h3 style="padding-left:1em;">3. ベイズ最適化・確率的サンプリングの系譜 (Thompson Sampling)</h3>
+
+<p>
+報酬の確率分布をベイズ的に予測・更新していく系譜です。近年、実務（A/Bテストの自動化や推薦システム）で非常に高い成果を上げており主流の一つとなっています。
+</p>
+
+<h4 style="padding-left:2em;">Thompson Sampling (トンプソンサンプリング)</h4>
+
+<p style="padding-left:4em;">
+各腕の報酬分布を事後分布として推定し、その分布からランダムにサンプリングした値が最大の腕を選択する手法。
+</p>
+
+<p style="padding-left:4em;">
+1. 各腕の報酬確率をサンプリングする。<br>
+<br>
+　各腕 \(i\) について、現在の「成功回数 \(\alpha _{i}\)」と「失敗回数 \(\beta _{i}\)」をパラメータに持つ ベータ分布（Beta分布） から、予測値 \(\theta _{i}\) をランダムに1つ抽出します。
+\[
+\theta_i \sim Beta\big(\alpha_i, \beta_i\big) \quad \text{for }i=1,2,...,K
+\]
+
+(蛇足)<br>
+・ 難しそうに見えるが、報酬を0/1 とすると、コイントスの尤度と同じ。<br>
+　尤度：　横軸･･･モデル(裏しか出ないモデル･･･裏表50%のモデル･･･表しか出ないモデル)<br>
+　　　　　縦軸･･･モデルの尤もらしさ
+</p>
+
+<center><img src="images/tompson.svg"></center>
+
+<p style="padding-left:4em;">
+
+2. サンプリング値が最大の腕を選択する
+<br><br>
+　抽出した予測値 \(\theta_i(t)\) が最も大きかった腕 \(A_{t}\) を選択（プレイ）します。
+</p>
+
+<p style="padding-left:4em;">
+(蛇足)<br>
+　複数の腕で \(θ\) が同じ場合は、尤度の幅が広い(伸びしろが大きい）腕を選ぶ → USB1と同じ
+</p>
+
+<h4 style="padding-left:2em;">LinTS (Linear Thompson Sampling)</h4>
+
+<p style="padding-left:4em;">
+トンプソンサンプリングをコンテキスト添え付きバンディット（線形モデル）に応用したもの。
+</p>
+
+<h3 style="padding-left:1em;">4. 敵対的環境・非静的な系譜 (Exp系列) (Thompson Sampling)</h3>
+
+<p>
+これまでの手法が「報酬の確率分布が一定（静的）」であることを前提としているのに対し、<strong><span style="color:magenta;">環境が時間の経過やプレイヤーの行動に応じて悪意を持って変化する（敵対的環境）ことを想定した系譜</span></strong>です。
+</p>
+
+<h4 style="padding-left:2em;">Exp3 (Exponential-weight algorithm for Exploration and Exploitation)</h4>
+
+<p style="padding-left:4em;">
+報酬の確率分布を仮定せず、過去の重みに基づいて確率的に腕を選択し、得られた報酬の逆確率で重みを指数関数的に更新する手法。
+
+</p>
+
+<h4 style="padding-left:2em;">Exp4</h4>
+
+<p style="padding-left:4em;">
+複数の「エキスパート（助言者）」の意見を統合してコンテキストに対応させる手法。
+
+</p>
+
+<h2>シミュレーション</h2>
+
+<p>
+(data/task_multi_armed_bandit_problem/src/sim_epsilon_usb_thompson.py)
+</p>
+
+<center><img src="images/sim.svg"></center>
+
+</body>
+</html>
