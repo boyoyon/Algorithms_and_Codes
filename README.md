@@ -67,6 +67,7 @@ Lecture notes with working Python code
 
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/mds/mds.html">MDS: Multi Dimensional Scaling (多次元尺度構成法)</a><br>
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/dataset_mnist/dataset_mnist.html">(データセット) MNIST</a><br>
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/task_multi_armed_bandit_problem/multi_armed_bandit_problem.html">(タスク) Multi Armed Bandit Problem</a><br>
 <h2>N</h2>
 <h2>O</h2>
 <h2>P</h2>
