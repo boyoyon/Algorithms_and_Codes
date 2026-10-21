@@ -162,6 +162,13 @@ PAC学習の未解決問題 (弱学習器から強学習器への昇格) を解�
 多くのMoE（例えばGoogleのSparsely-Gated MoEなど）では、ゲートネットワークの出力にあえて小さなランダムノイズ（Gumbelノイズなど）を混ぜます。
 </p>
 
+<p>
+(蛇足)<br>
+　ゲートとエキスパートを同時学習するところがGANと似ている気がする･･･<br>
+　GAN： 敵対的、同時学習に失敗すると Model 崩壊 (同じ画像を生成) を起こす。<br>
+　MoE: 協調的、同時学習に失敗すると Expert 崩壊 (同じエキスパートを生成) を起こす
+</p>
+
 <h4 style="padding-left:1em;">『What-is-learnable-by-simple-hypotheses? 』(1992)</h4>
 
 <p style="padding-left:3em;">
