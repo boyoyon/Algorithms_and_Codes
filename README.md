@@ -76,6 +76,7 @@ Lecture notes with working Python code
 <h2>Q</h2>
 <h2>R</h2>
 <h2>S</h2>
+・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/seam_carving/seam_carving.html">Seam Carving</a></br>
 <h2>T</h2>
 <h2>U</h2>
 ・<a href="https://boyoyon.github.io/Algorithms_and_Codes/data/unsharp_masking/unsharp_masking_retinex.html">unsharp masking (アンシャープマスキング)</a><br>
