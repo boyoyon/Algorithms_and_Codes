@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        <meta charset="utf-8" />
+        <title>Seam Carving</title>
+        <style type="text/css">
+            p
+            {
+                padding-left: 2em;
+            }
+           .margin-abstract {
+               margin-left: 60px; /* 左マージンを広くする */
+               margin-right: 60px; /* 右マージンを広くする */
+           }
+        </style>
+    <style>
+        .styleRef { 
+            text-indent: -40px; /* 最初の行の字下げを逆方向に */
+            margin-left: 10px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 40px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+    <style>
+        .styleBullet { 
+            text-indent: -20px; /* 最初の行の字下げを逆方向に */
+            margin-left: 30px; /* 2行目以降の字下げを調整 */
+            ul {
+                  list-style-type: none; /* 箇条書き記号を非表示 */
+                  padding-left: 20px; /* 全体の左余白 */
+            }
+            li {
+            }
+        }
+    </style>
+<style>
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  flex: 0 25%; /* 幅を25%に設定して4列に */
+  box-sizing: border-box;
+  padding: 10px;
+}
+</style>
+</head>
+<body>
+
+<h1><center>Seam Carving</center></h1>
+
+<h2>なにものか?</h2>
+
+<p>
+● 『<a href="https://dl.acm.org/doi/pdf/10.1145/1275808.1276390">Seam Carving for Content-Aware Image Resizing</a>』 (SIGGRAP2007)
+</p>
+
+<center><img src="images/1.svg"></center>
+
+<p>
+Seam Carving（シームカービング）とは、画像の重要な被写体を歪めることなく、不要な背景部分などを自動的に識別して縮小・拡大（リサイズ）できるコンテンツを意識した画像リサイズ（Content-Aware Image Resizing）アルゴリズムです。2007年にShai Avidan氏とAriel Shamir氏によって発表されました。
+</p>
+
+<p>
+通常の画像リサイズは全体を一様に引き伸ばしたり縮めたりするため、被写体が横太りしたり潰れたりしてしまいます。しかしシームカービングでは、画像内の「情報量が少なく、消しても目立たない部分」を自動で見つけて処理するため、メインの被写体を保ったまま縦横比を変更できます
+</p>
+
+<p>
+画像を単に幾何学的に縮小・拡大するのではなく、画像内の「コンテンツ（意味や重要度）」を考慮してリサイズするという新しいパラダイムを確立し、当時の画像処理分野に非常に大きな衝撃を与えました。
+</p>
+
+<p>
+(蛇足)<br>
+　直訳すると「縫い目を削り取る」
+</p>
+
+<h3>アルゴリズム概要</h3>
+
+<p>
+<div class="styleBullet">
+<ul><li>
+1. エネルギマッピング（重要度のスコア化）<br>
+<br>
+画像のピクセルごとに「重要度（エネルギ）」を計算します。一般的にはエッジ検出（輪郭線の抽出）などが使われ、色の変化が激しい輪郭部分は「エネルギが高い（重要）」、空や壁などの平坦な背景は「エネルギが低い（不要）」と判定されます。
+</li><br><li>
+2. シーム（縫い目）の探索<br>
+<br>
+画像の上端から下端（または左端から右端）まで、最もエネルギの合計が低くなるピクセルの通り道を一本の繋がった線として見つけ出します。この線を通称 「Seam（シーム＝縫い目）」 と呼びます。
+<br><br>
+この最適なルートを効率よく見つけるために、アルゴリズムの王道である動的計画法（Dynamic Programming）が使われています。
+</li><br><li>
+3. 削除または挿入<br>
+<br>
+縮小する場合： 見つかった不要なシーム（1ピクセル幅の線）を切り取って画像を詰め、サイズを1ピクセル縮めます。
+<br><br>
+拡大する場合： 見つかったシームの周囲のピクセルを複製して補間し、サイズを1ピクセル広げます。
+<br><br>
+目的のサイズになるまで、この「エネルギ計算 → シームの発見 → 削除/挿入」のプロセスを繰り返します。
+</li></ul></div>
+</p>
+
+<h3>お試しコード</h3>
+
+<p>
+● data/seam_carving/src/seam_carving_using_library.py<br>
+(環境構築)<br>
+pip install seam-carving opencv-python
+<br><br>
+(使い方)<br>
+python　seam_carving_using_library.py　(画像ファイル)　[(幅のスケール)　(高さのスケール)]<br>
+・ スケール≦1 (縮小のみ)<br>
+・ sキー　　　　保存～終了<br>
+・ その他キー　保存せずに終了
+</p>
+
+<p>
+● data/seam_carving/src/seam_carving_from_scratch.py<br>
+(環境構築)<br>
+pip install opencv-python
+<br><br>
+(使い方)<br>
+python　seam_carving_from_scratch.py　(画像ファイル)　[(幅のスケール)　(高さのスケール)]<br>
+・ すごく遅い<br>
+・ スケール≦1 (縮小のみ)<br>
+・ sキー　　　　保存～終了<br>
+・ その他キー　保存せずに終了
+</p>
+</body>
+</html>
