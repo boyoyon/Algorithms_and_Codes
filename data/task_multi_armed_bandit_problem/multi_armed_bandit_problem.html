@@ -200,9 +200,48 @@
 　抽出した予測値 \(\theta_i(t)\) が最も大きかった腕 \(A_{t}\) を選択（プレイ）します。
 </p>
 
+<p>
+　●『On the likelihood that one unknown probability exceeds another in view of the evidence of two samples』 (1933)
+</p>
+
 <p style="padding-left:4em;">
-(蛇足)<br>
-　複数の腕で \(θ\) が同じ場合は、尤度の幅が広い(伸びしろが大きい）腕を選ぶ → USB1と同じ
+臨床試験（治験）において患者へ効果的な治療法をいかに割り当てるかという問題（2アームのバンディット問題）を解くために提案されましたが、長らく注目されませんでした
+</p>
+
+<p>
+　●『An Empirical Evaluation of Thompson Sampling』 (2011)
+</p>
+
+<p style="padding-left:4em;">
+Web広告の配信や推薦システムなどの大規模な実データを用いてベンチマークを行い、トンプソンサンプリングが当時の最先端（State-of-the-Art）アルゴリズムを圧倒する性能を持つことを実証しました。この論文が呼び水となり、「なぜこんなに強いのか」を数学的に証明する理論研究の競争が始まりました。
+</p>
+
+<p>
+　●『Analysis of Thompson Sampling for the Multi-armed Bandit Problem』 (2012)
+</p>
+
+<p style="padding-left:4em;">
+「実験的に強い」という事実に対し、初めて理論的な最悪ケースの保証（リグレット解析）を証明した記念碑的な論文です。
+</p>
+
+<p style="padding-left:4em;">
+報酬がベルヌーイ分布に従う標準的なマルチアームバンディット問題において、トンプソンサンプリングのリグレット（損失）が時間の対数オーダー（\(O(\ln T)\)）で抑えられることを初めて理論的に証明しました。
+</p>
+
+<p>
+　●『Further Optimal Regret Bounds for Thompson Sampling』 (2012)
+</p>
+
+<p style="padding-left:4em;">
+ほぼ同時期に、トンプソンサンプリングが理論上「これ以上良くならない」という限界（Lai-Robbinsの理論限界）に完全に到達していることを証明した論文です。
+</p>
+
+<p style="padding-left:4em;">
+トンプソンサンプリングが、情報理論的なリグレットの下限値（理論上のベストスコア）に漸近的に一致すること（漸近最適性）を証明。これにより、「実用面でも理論面でも最強のアルゴリズムの一つ」としての地位が不動のものとなりました。
+</p>
+
+<p>
+これら「2011〜2012年の3つの論文」が揃ったことで、1933年の古い手法だったトンプソンサンプリングは、現代のAI・機械学習における大本命アルゴリズムへと生まれ変わりました。
 </p>
 
 <h4 style="padding-left:2em;">LinTS (Linear Thompson Sampling)</h4>
